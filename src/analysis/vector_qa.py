@@ -4,7 +4,9 @@ import json
 import os
 import chromadb
 import time
-from .base_analyzer import BaseVectorAnalyzer  # For vector-based ones
+
+from src.analysis.vector_context_qa import VectorizedQAAnalyzer
+from .base_analyzer import BaseVectorAnalyzer  
 
 class VectorizedContextQAAnalyzer(BaseVectorAnalyzer):
     """Analyzer using vector embeddings for paper analysis"""
