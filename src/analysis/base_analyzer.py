@@ -1,124 +1,55 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass
+from typing import List, Dict, Any
 from datetime import datetime
 import json
 import os
 
-@dataclass
-class AnalysisResult:
-    """Standard format for analysis results"""
-    question_id: str
-    question: str
-    response: str
-    model_name: str
-    interface_type: str  # 'api', 'web', 'anything_llm'
-    metrics: Dict[str, Any]
-    timestamp: datetime
-    error: Optional[str] = None
-
-class BasePaperAnalyzer(ABC):
-    """Base class for paper analysis"""
+class BaseAnalyzer(ABC):
+    """Abstract base class for all analyzers"""
     
-    def __init__(self, output_dir: str = 'results'):
+    def __init__(self, output_dir: str = 'data/results'):
         self.output_dir = output_dir
-        self.results = []
         os.makedirs(output_dir, exist_ok=True)
     
     @abstractmethod
-    async def analyze_paper(self, paper_text: str, model_interface: Any) -> List[AnalysisResult]:
+    async def analyze_single_paper(self, paper_text: str, model) -> List[Dict[str, Any]]:
         """Analyze a single paper"""
         pass
-    
+
     @abstractmethod
-    async def analyze_papers(self, papers: List[str], model_interface: Any) -> List[List[AnalysisResult]]:
+    async def analyze_papers(self, papers: List[str], model) -> Dict[str, List[Dict[str, Any]]]:
         """Analyze multiple papers"""
         pass
-    
-    def save_results(self, filename: str) -> None:
+
+    def save_results(self, results: Dict[str, Any], filename: str):
         """Save analysis results to file"""
         output_path = os.path.join(self.output_dir, filename)
-        
-        # Convert results to dictionary format
-        results_dict = {
-            'timestamp': datetime.now().isoformat(),
-            'results': [
-                {
-                    'question_id': r.question_id,
-                    'question': r.question,
-                    'response': r.response,
-                    'model_name': r.model_name,
-                    'interface_type': r.interface_type,
-                    'metrics': r.metrics,
-                    'timestamp': r.timestamp.isoformat(),
-                    'error': r.error
-                }
-                for r in self.results
-            ]
-        }
-        
         with open(output_path, 'w') as f:
-            json.dump(results_dict, f, indent=2)
-    
-    def load_results(self, filename: str) -> None:
+            json.dump(results, f, indent=2)
+        print(f"\nResults saved to {output_path}")
+
+    def load_results(self, filename: str) -> Dict[str, Any]:
         """Load analysis results from file"""
         input_path = os.path.join(self.output_dir, filename)
-        
         with open(input_path, 'r') as f:
-            data = json.load(f)
-            
-        self.results = [
-            AnalysisResult(
-                question_id=r['question_id'],
-                question=r['question'],
-                response=r['response'],
-                model_name=r['model_name'],
-                interface_type=r['interface_type'],
-                metrics=r['metrics'],
-                timestamp=datetime.fromisoformat(r['timestamp']),
-                error=r['error']
-            )
-            for r in data['results']
-        ]
+            return json.load(f)
+
+class BaseVectorAnalyzer(BaseAnalyzer):
+    """Base class for vector-based analyzers"""
     
-    def get_metrics_summary(self) -> Dict[str, Any]:
-        """Get summary of analysis metrics"""
-        summary = {
-            'total_analyses': len(self.results),
-            'errors': sum(1 for r in self.results if r.error is not None),
-            'models': {},
-            'interfaces': {}
-        }
+    def __init__(self, output_dir: str = 'data/results', chunk_size: int = 1000):
+        super().__init__(output_dir)
+        self.chunk_size = chunk_size
+    
+    def chunk_text(self, text: str) -> List[str]:
+        """Split text into chunks with overlap"""
+        words = text.split()
+        chunks = []
+        overlap = 100  # Number of words to overlap
         
-        # Summarize by model
-        for result in self.results:
-            if result.model_name not in summary['models']:
-                summary['models'][result.model_name] = {
-                    'count': 0,
-                    'errors': 0,
-                    'avg_latency': 0.0
-                }
-            
-            model_stats = summary['models'][result.model_name]
-            model_stats['count'] += 1
-            if result.error:
-                model_stats['errors'] += 1
-            model_stats['avg_latency'] = (
-                (model_stats['avg_latency'] * (model_stats['count'] - 1) +
-                 result.metrics.get('latency', 0)) / model_stats['count']
-            )
+        for i in range(0, len(words), self.chunk_size - overlap):
+            chunk = ' '.join(words[i:i + self.chunk_size])
+            if len(chunk.strip()) > 0:
+                chunks.append(chunk)
         
-        # Summarize by interface
-        for result in self.results:
-            if result.interface_type not in summary['interfaces']:
-                summary['interfaces'][result.interface_type] = {
-                    'count': 0,
-                    'errors': 0
-                }
-            
-            interface_stats = summary['interfaces'][result.interface_type]
-            interface_stats['count'] += 1
-            if result.error:
-                interface_stats['errors'] += 1
-        
-        return summary
+        return chunks

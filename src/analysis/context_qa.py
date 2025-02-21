@@ -2,8 +2,9 @@ from typing import List, Dict, Any
 from datetime import datetime
 import json
 import os
+from .base_analyzer import BaseAnalyzer  # For basic and context
 
-class ContextQAAnalyzer:
+class ContextQAAnalyzer(BaseAnalyzer):
     """Analyzer for cross-paper contextual analysis"""
 
     # Questions for analyzing relationships between papers

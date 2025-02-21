@@ -2,8 +2,9 @@ from typing import List, Dict, Any
 from datetime import datetime
 import json
 import os
+from .base_analyzer import BaseAnalyzer  # For basic and context
 
-class BasicQAAnalyzer:
+class BasicQAAnalyzer(BaseAnalyzer):
     """Basic question-answering analyzer for individual papers"""
 
     # Define standard questions for paper analysis

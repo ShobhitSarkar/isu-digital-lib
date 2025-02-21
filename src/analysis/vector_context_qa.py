@@ -4,8 +4,9 @@ import json
 import os
 import chromadb
 import time
+from .base_analyzer import BaseVectorAnalyzer  # For vector-based ones
 
-class VectorizedContextQAAnalyzer:
+class VectorizedQAAnalyzer(BaseVectorAnalyzer):
     """Analyzer for cross-paper analysis using vector search"""
 
     CONTEXT_QUESTIONS = {
