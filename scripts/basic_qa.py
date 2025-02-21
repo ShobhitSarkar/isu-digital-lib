@@ -15,7 +15,6 @@ BASIC_QUESTIONS = {
     'methodology': 'What methodology or approach does this paper use?',
     'results': 'What are the key results and their significance?',
     'limitations': 'What are the limitations or challenges identified in this work?',
-    'future_work': 'What future work or research directions are suggested?'
 }
 
 def extract_text_from_pdf(pdf_path):
