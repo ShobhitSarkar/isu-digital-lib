@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Project specific
+data/openai_results/*
+data/results/*
+scripts/__pycache__/
+scripts/data/openai_results/*
+scripts/data/results/*
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# ChromaDB
+.chroma/
+chroma_db/
+
+# Log files
+*.log
+
+# Local development specific
+.python-version
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# API keys and secrets
+.env
+*.pem
+*.key
