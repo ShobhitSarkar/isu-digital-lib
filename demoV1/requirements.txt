@@ -1,0 +1,5 @@
+openai
+faiss-cpu
+PyPDF2
+streamlit
+tqdm
