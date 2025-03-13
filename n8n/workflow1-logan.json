@@ -1,0 +1,707 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e594c325-7e86-4fe6-9a37-75ea2d80b1e8",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -100,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "EllsworthLogan",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8nExample",
+          "mode": "list",
+          "cachedResultName": "n8nExample",
+          "cachedResultUrl": "https://github.com/EllsworthLogan/n8nExample"
+        },
+        "filePath": "COMS-ETD-DSpace-Export.csv",
+        "additionalParameters": {}
+      },
+      "id": "01b55415-8475-4539-b864-89805a6a8299",
+      "name": "GitHub",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        120,
+        0
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "githubApi": {
+          "id": "HM0AWMVysmXPK8K2",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "facfe1d7-9d54-42dd-a965-d0b869fd1056",
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        280,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "advisor",
+                "value": "={{ $('Extract from File').item.json['Advisor'] }}"
+              },
+              {
+                "name": "Author",
+                "value": "={{ $('Extract from File').item.json['Author'] }}"
+              },
+              {
+                "name": "Date",
+                "value": "={{ $('Extract from File').item.json['Date']}}"
+              },
+              {
+                "name": "Abstract",
+                "value": "={{ $('Extract from File').item.json['Abstract']}}"
+              },
+              {
+                "name": "URL",
+                "value": "={{ $('Extract from File').item.json['URL']}}"
+              },
+              {
+                "name": "Discipline",
+                "value": "={{ $('Extract from File').item.json['Discipline']}}"
+              },
+              {
+                "name": "Keywords",
+                "value": "={{ $('Extract from File').item.json['Keywords']}}"
+              },
+              {
+                "name": "Title",
+                "value": "={{ $('Extract from File').item.json['Title']}}"
+              },
+              {
+                "name": "Type",
+                "value": "={{ $('Extract from File').item.json['Type']}}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "db38828c-eefc-40f7-8eea-2e6af219110b",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        900,
+        140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "516b0b3a-865e-45bc-ae23-f831520232ea",
+      "name": "Token Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterTokenSplitter",
+      "position": [
+        1340,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "Title",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "c7b6c5d1-b6b5-4307-a5bb-dd1d326f3df4",
+      "name": "Qdrant Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "position": [
+        520,
+        0
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "qdrantApi": {
+          "id": "tI4UFsP1m8Wv7Pz4",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f8bfcf71-e53f-4236-a24b-da001f6ba480",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        -160,
+        400
+      ],
+      "webhookId": "71bfe0f8-227e-466b-9d07-69fd9fe4a27b",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a659249f-0a76-4bd0-b91e-11221a3e9401",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -200,
+        680
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "name": "rag_chatbot",
+        "description": "Call this tool to get a response to user's query about CS Department's published papers/thesis.",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "a58HZKwcOy7lmz56"
+        },
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n\"type\": \"object\",\n\"properties\": {\n\t\"question\": {\n      \"type\": \"string\",\n      \"question\": \"A string with a question the user has.\"\n    }\n}\n}"
+      },
+      "id": "3ac82b86-e728-476d-8744-b7fef06ecb67",
+      "name": "Call n8n Workflow Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        240,
+        780
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {},
+      "id": "9083a114-7593-4f56-8378-85264be24396",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        40,
+        740
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {},
+      "id": "ca33a257-7c60-48a1-946e-ce2a9c4bcce4",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        560,
+        860
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "result",
+        "options": {}
+      },
+      "id": "0487db48-6ef2-435d-9d23-7b696f9db9cc",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        2180,
+        740
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "result.points",
+        "options": {}
+      },
+      "id": "04ba635e-3630-436a-a2bd-03d5c2af8c70",
+      "name": "Split Out1",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        2060,
+        520
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "id",
+        "options": {}
+      },
+      "id": "c6d00e85-fc4a-4278-8045-f89630cbc501",
+      "name": "Merge1",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        2440,
+        660
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "response",
+        "options": {}
+      },
+      "id": "99744f6a-1d77-46e6-a610-517b3b708f58",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        2880,
+        660
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a Chatbot that is Iowa State's Computer Science Department's Publication chatbot. You are using a Vector Database under the hood. Provide best paper recommendations, for a given query, returned by the database, ordered by their recommendation score, but not showing the score to the user."
+        }
+      },
+      "id": "b6d2353c-5a64-4a38-a2ef-c43c4568068b",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        60,
+        400
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "01a28c9d-aeb1-48bb-8a73-f8bddbd73460",
+              "name": "question",
+              "type": "array",
+              "value": "={{ $json.data[0].embedding }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b7dbba96-8383-4003-b8f6-f472011ba5e1",
+      "name": "Extracting Embedding",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1300,
+        760
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://edcc6735-2ffb-484f-b735-3467043828fe.europe-west3-0.gcp.cloud.qdrant.io:6333/collections/imdb_1000_open_ai/points/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": {\n    \"recommend\": {\n      \"positive\": [[{{ $json.positive_example }}]],\n      \"negative\": [[{{ $json.negative_example }}]],\n      \"strategy\": \"average_vector\"\n    }\n  },\n  \"limit\":3\n}",
+        "options": {}
+      },
+      "id": "eb09b521-86dc-4aa2-8e2a-1dee81bdc874",
+      "name": "Calling Qdrant Recommendation API",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1760,
+        760
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://edcc6735-2ffb-484f-b735-3467043828fe.europe-west3-0.gcp.cloud.qdrant.io:6333/collections/imdb_1000_open_ai/points",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"ids\": [\"{{ $json.result.points[0].id }}\", \"{{ $json.result.points[1].id }}\", \"{{ $json.result.points[2].id }}\"],\n    \"with_payload\":true\n}",
+        "options": {}
+      },
+      "id": "f2c5b3b7-27fa-44f0-a634-43c6c5b09115",
+      "name": "Retrieving Recommended Movies Meta Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1980,
+        720
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4b520a5-d0e2-4dcb-af9d-0b7748fd44d6",
+              "name": "movie_recommendation_score",
+              "type": "number",
+              "value": "={{ $json.score }}"
+            },
+            {
+              "id": "c9f0982e-bd4e-484b-9eab-7e69e333f706",
+              "name": "movie_description",
+              "type": "string",
+              "value": "={{ $json.payload.content }}"
+            },
+            {
+              "id": "7c7baf11-89cd-4695-9f37-13eca7e01163",
+              "name": "movie_name",
+              "type": "string",
+              "value": "={{ $json.payload.metadata.movie_name }}"
+            },
+            {
+              "id": "1d1d269e-43c7-47b0-859b-268adf2dbc21",
+              "name": "movie_release_year",
+              "type": "string",
+              "value": "={{ $json.payload.metadata.release_year }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e45a377b-71ed-43e7-8784-1a4bbd9ba79a",
+      "name": "Selecting Fields Relevant for Agent",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2660,
+        660
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "Tool, calling Qdrant's recommendation API based on user's request, transformed by AI agent"
+      },
+      "id": "4692131a-9f93-412d-9754-275b77baa863",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        480,
+        1040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Uploading data (movies and their descriptions) to Qdrant Vector Store\n"
+      },
+      "id": "76a5faca-33d3-4702-8a22-490c5519fe95",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -520,
+        100
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "input",
+              "value": "={{ $json.query.question }}"
+            },
+            {
+              "name": "model",
+              "value": "text-embedding-3-small"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f45bf69f-b73a-487e-854a-6a27d33dd856",
+      "name": "Embedding Question Request with Open AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        960,
+        760
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        480,
+        200
+      ],
+      "id": "ed2f859f-aa20-4a47-82f8-7808693d4348",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "UU5BAuzE6mnb47Oh",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call n8n Workflow Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Embedding Question Request with Open AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Selecting Fields Relevant for Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extracting Embedding": {
+      "main": [
+        [
+          {
+            "node": "Calling Qdrant Recommendation API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calling Qdrant Recommendation API": {
+      "main": [
+        [
+          {
+            "node": "Retrieving Recommended Movies Meta Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieving Recommended Movies Meta Data": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Selecting Fields Relevant for Agent": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embedding Question Request with Open AI": {
+      "main": [
+        [
+          {
+            "node": "Extracting Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Execute Workflow Trigger": [
+      {
+        "query": {
+          "question": "User asks a question"
+        }
+      }
+    ]
+  },
+  "meta": {
+    "instanceId": "cd28c26888a8d47a27dfaa6537cc58c51854b0e5da3834f51581eb0cd91b1d9a"
+  }
+}
