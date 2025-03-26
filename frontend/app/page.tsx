@@ -12,7 +12,7 @@ export default function Home() {
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-2">
             <ISULogo className="h-8 w-8" />
-            <h1 className="text-xl font-bold text-cardinal dark:text-gold">ISU Digital Repository Search</h1>
+            <h1 className="text-xl font-bold text-cardinal dark:text-gold">ISU Scholar Search</h1>
           </div>
           <div className="flex items-center gap-4">
             <ModeToggle />

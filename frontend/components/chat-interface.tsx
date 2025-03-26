@@ -9,19 +9,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Loader2, Send, BookOpen, ExternalLink } from "lucide-react"
+import { Loader2, Send, BookOpen, ExternalLink, Upload } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+
+interface Reference {
+  id: string
+  title: string
+  author: string
+  url: string
+}
 
 interface Message {
   id: string
   content: string
   sender: "user" | "assistant"
   timestamp: Date
-  references?: {
-    id: string
-    title: string
-    author: string
-    url: string
-  }[]
+  references?: Reference[]
 }
 
 export function ChatInterface() {
@@ -36,7 +39,10 @@ export function ChatInterface() {
     },
   ])
   const [isLoading, setIsLoading] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const { toast } = useToast()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -61,42 +67,143 @@ export function ChatInterface() {
     setInput("")
     setIsLoading(true)
 
-    // Simulate API response
-    setTimeout(() => {
+    try {
+      // Get chat history for context
+      const history = messages
+        .filter((m) => m.id !== "welcome")
+        .map((m) => ({
+          role: m.sender === "user" ? "user" : "assistant",
+          content: m.content,
+        }))
+
+      // Call our API
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: input,
+          history: history,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to get response")
+      }
+
+      const data = await response.json()
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content:
-          "Based on Iowa State's research repository, there have been several studies on sustainable agriculture practices. Recent papers highlight the effectiveness of crop rotation and precision farming in reducing environmental impact while maintaining yield.",
+        content: data.response,
         sender: "assistant",
         timestamp: new Date(),
-        references: [
-          {
-            id: "ref1",
-            title: "Sustainable Agricultural Practices in Iowa: A Five-Year Study",
-            author: "Dr. Emily Johnson",
-            url: "#",
-          },
-          {
-            id: "ref2",
-            title: "Economic Impact of Precision Farming Technologies",
-            author: "Prof. Michael Williams",
-            url: "#",
-          },
-        ],
+        references: data.references,
       }
 
       setMessages((prev) => [...prev, assistantMessage])
+    } catch (error) {
+      console.error("Error sending message:", error)
+      toast({
+        title: "Error",
+        description: "Failed to get a response. Please try again.",
+        variant: "destructive",
+      })
+
+      // Add error message
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          content: "I'm sorry, I encountered an error processing your request. Please try again.",
+          sender: "assistant",
+          timestamp: new Date(),
+        },
+      ])
+    } finally {
       setIsLoading(false)
-    }, 2000)
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setIsUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("file", files[0])
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error("Upload failed")
+      }
+
+      const data = await response.json()
+
+      toast({
+        title: "Upload Successful",
+        description: `${files[0].name} has been uploaded and processed.`,
+      })
+
+      // Add system message about the upload
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          content: `I've processed "${files[0].name}". You can now ask questions about this document.`,
+          sender: "assistant",
+          timestamp: new Date(),
+        },
+      ])
+    } catch (error) {
+      console.error("Upload error:", error)
+      toast({
+        title: "Upload Failed",
+        description: "There was an error uploading your file.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploading(false)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    }
+  }
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click()
   }
 
   return (
     <div className="flex h-[70vh] flex-col rounded-lg border">
-      <div className="border-b p-3">
-        <h3 className="font-medium">ISU Scholar Assistant</h3>
-        <p className="text-xs text-muted-foreground">
-          Ask questions about research papers, get summaries, and find relevant documents
-        </p>
+      <div className="border-b p-3 flex justify-between items-center">
+        <div>
+          <h3 className="font-medium">ISU Scholar Assistant</h3>
+          <p className="text-xs text-muted-foreground">
+            Ask questions about research papers, get summaries, and find relevant documents
+          </p>
+        </div>
+        <div className="flex items-center">
+          <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={triggerFileUpload}
+            disabled={isUploading}
+            className="flex items-center gap-1"
+          >
+            {isUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+            Upload Paper
+          </Button>
+        </div>
       </div>
 
       <ScrollArea className="flex-1 p-4">
@@ -114,7 +221,7 @@ export function ChatInterface() {
                       <AvatarImage src="/placeholder.svg?height=40&width=40" alt="ISU Assistant" />
                       <AvatarFallback className="bg-gold text-white">ISU</AvatarFallback>
                     </Avatar>
-                    <span className="text-xs font-medium">ISU Digital Repository Assistant</span>
+                    <span className="text-xs font-medium">ISU Scholar Assistant</span>
                   </div>
                 )}
                 <p className={`text-sm ${message.sender === "user" ? "text-white" : ""}`}>{message.content}</p>
