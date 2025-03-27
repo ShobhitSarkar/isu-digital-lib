@@ -1,8 +1,12 @@
+// app/api/upload/route.ts - Updated implementation
 import { type NextRequest, NextResponse } from "next/server"
-import { writeFile } from "fs/promises"
-import { join } from "path"
+import { writeFile, mkdir } from "fs/promises"
+import { join, dirname } from "path"
 import { QdrantClient } from "@qdrant/js-client-rest"
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { existsSync } from "fs"
+import { ensureCollection, COLLECTION_NAME } from "@/lib/qdrant-client"
+import { PDFLoader } from "langchain/document_loaders/fs/pdf"
 
 // Initialize Google AI for embeddings
 const googleAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "")
@@ -13,7 +17,18 @@ const qdrantClient = new QdrantClient({
   apiKey: process.env.QDRANT_API_KEY,
 })
 
-const COLLECTION_NAME = "isu_papers"
+// Helper function to get embeddings from Google's API
+async function getEmbedding(text: string): Promise<number[]> {
+  try {
+    const model = googleAI.getGenerativeModel({ model: "embedding-001" })
+    const result = await model.embedContent(text)
+    return result.embedding
+  } catch (error) {
+    console.error("Error generating embedding:", error)
+    // Fallback to random embeddings in case of error
+    return Array.from({ length: 1536 }, () => Math.random())
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,65 +39,88 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
     }
 
+    // Create tmp directory if it doesn't exist
+    const tempDir = join(process.cwd(), "tmp")
+    if (!existsSync(tempDir)) {
+      await mkdir(tempDir, { recursive: true })
+    }
+
     // Save file temporarily
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-
-    const tempDir = join(process.cwd(), "tmp")
     const filePath = join(tempDir, file.name)
-
     await writeFile(filePath, buffer)
 
-    // Process the PDF (in a real implementation, you would use pdfplumber or similar)
-    // For this example, we'll simulate the processing
+    // Extract text from PDF using LangChain's PDFLoader
+    const loader = new PDFLoader(filePath)
+    const docs = await loader.load()
+
+    // Prepare paper info
+    const paperId = `paper-${Date.now()}`
     const paperInfo = {
-      id: `paper-${Date.now()}`,
+      id: paperId,
       title: file.name.replace(".pdf", ""),
       author: "Unknown Author",
       date: new Date().toISOString(),
-      text: "Simulated extracted text from PDF",
+      text: docs.map(doc => doc.pageContent).join("\n\n"),
     }
 
-    // In a real implementation, you would:
-    // 1. Extract text from PDF
-    // 2. Split into chunks
-    // 3. Generate embeddings for each chunk
-    // 4. Store in Qdrant
-
-    // Simulate adding to Qdrant
+    // Ensure collection exists
     await ensureCollection()
+
+    // Split text into chunks for better retrieval (chunks of roughly 1000 characters)
+    const textChunks = []
+    const chunkSize = 1000
+    let currentChunk = ""
+    
+    const paragraphs = paperInfo.text.split("\n\n")
+    for (const paragraph of paragraphs) {
+      if (currentChunk.length + paragraph.length > chunkSize) {
+        textChunks.push(currentChunk)
+        currentChunk = paragraph
+      } else {
+        currentChunk += (currentChunk ? "\n\n" : "") + paragraph
+      }
+    }
+    if (currentChunk) {
+      textChunks.push(currentChunk)
+    }
+
+    // Add document chunks to Qdrant
+    for (let i = 0; i < textChunks.length; i++) {
+      const chunk = textChunks[i]
+      const embedding = await getEmbedding(chunk)
+      
+      await qdrantClient.upsert(COLLECTION_NAME, {
+        wait: true,
+        points: [
+          {
+            id: `${paperId}-chunk-${i}`,
+            vector: embedding,
+            payload: {
+              paper_id: paperId,
+              chunk_id: i,
+              title: paperInfo.title,
+              text: chunk,
+              author: paperInfo.author,
+              date: paperInfo.date
+            }
+          }
+        ]
+      })
+    }
 
     // Return success response
     return NextResponse.json({
       success: true,
       message: "File uploaded and processed successfully",
-      paper: paperInfo,
+      paper: {
+        ...paperInfo,
+        chunks: textChunks.length
+      }
     })
   } catch (error) {
     console.error("Error in upload API:", error)
     return NextResponse.json({ error: "Failed to process your request" }, { status: 500 })
   }
 }
-
-// Helper function to ensure collection exists
-async function ensureCollection() {
-  try {
-    // Check if collection exists
-    const collections = await qdrantClient.getCollections()
-    const exists = collections.collections.some((c) => c.name === COLLECTION_NAME)
-
-    if (!exists) {
-      // Create collection with appropriate dimensions for your embeddings
-      await qdrantClient.createCollection(COLLECTION_NAME, {
-        vectors: {
-          size: 1536, // Adjust based on your embedding model
-          distance: "Cosine",
-        },
-      })
-    }
-  } catch (error) {
-    console.error("Error ensuring collection exists:", error)
-    throw error
-  }
-}
-

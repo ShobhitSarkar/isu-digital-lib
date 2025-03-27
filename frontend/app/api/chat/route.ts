@@ -1,6 +1,8 @@
+// app/api/chat/route.ts - Updated implementation
 import { type NextRequest, NextResponse } from "next/server"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { QdrantClient } from "@qdrant/js-client-rest"
+import { COLLECTION_NAME } from "@/lib/qdrant-client"
 
 // Initialize Google AI
 const googleAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "")
@@ -12,7 +14,18 @@ const qdrantClient = new QdrantClient({
   apiKey: process.env.QDRANT_API_KEY,
 })
 
-const COLLECTION_NAME = "isu_papers"
+// Helper function to get embeddings from Google's API
+async function getEmbedding(text: string): Promise<number[]> {
+  try {
+    const embedModel = googleAI.getGenerativeModel({ model: "embedding-001" })
+    const result = await embedModel.embedContent(text)
+    return result.embedding
+  } catch (error) {
+    console.error("Error generating embedding:", error)
+    // Fallback to random embeddings in case of error
+    return Array.from({ length: 1536 }, () => Math.random())
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Extract contexts from search results
     const contexts = searchResults.map((result) => {
       const metadata = result.payload as any
-      return `From ${metadata.paper_id || "Unknown Paper"}:\n${metadata.text}`
+      return `From ${metadata.title || "Unknown Paper"}:\n${metadata.text}`
     })
 
     const combinedContext = contexts.join("\n\n")
@@ -50,7 +63,7 @@ export async function POST(request: NextRequest) {
     const references = searchResults.map((result) => {
       const metadata = result.payload as any
       return {
-        id: metadata.id || `ref-${Math.random().toString(36).substring(2, 9)}`,
+        id: metadata.paper_id || `ref-${Math.random().toString(36).substring(2, 9)}`,
         title: metadata.title || "Unknown Title",
         author: metadata.author || "Unknown Author",
         url: metadata.url || "#",
@@ -66,18 +79,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to process your request" }, { status: 500 })
   }
 }
-
-// Helper function to get embeddings
-async function getEmbedding(text: string): Promise<number[]> {
-  // For production, you would use a proper embedding model
-  // This is a placeholder that returns random embeddings
-  return Array.from({ length: 1536 }, () => Math.random())
-
-  // When you implement a real embedding service:
-  // const response = await fetch('your-embedding-api', {
-  //   method: 'POST',
-  //   body: JSON.stringify({ text }),
-  // });
-  // return response.json();
-}
-

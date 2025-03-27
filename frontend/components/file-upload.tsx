@@ -1,22 +1,20 @@
+// Updated FileUpload component
+// This will be used in a new page we'll create
 "use client"
-
-import type React from "react"
 
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Upload, FileText, Check, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { Progress } from "@/components/ui/progress"
 
-interface FileUploadProps {
-  onUploadComplete?: (paperInfo: any) => void
-}
-
-export function FileUpload({ onUploadComplete }: FileUploadProps) {
+export function EnhancedFileUpload() {
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
-  const [uploadStatus, setUploadStatus] = useState<Record<string, "pending" | "success" | "error">>({})
+  const [uploadStatus, setUploadStatus] = useState<Record<string, "pending" | "success" | "error" | "processing">>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
 
@@ -59,7 +57,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
     setUploadedFiles((prev) => [...prev, ...pdfFiles])
 
     // Initialize status for new files
-    const newStatus: Record<string, "pending" | "success" | "error"> = {}
+    const newStatus: Record<string, "pending" | "success" | "error" | "processing"> = {}
     pdfFiles.forEach((file) => {
       newStatus[file.name] = "pending"
     })
@@ -74,15 +72,33 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
 
   const uploadFile = async (file: File) => {
     setIsUploading(true)
-
+    setUploadProgress(0)
+    
     try {
+      setUploadStatus((prev) => ({ ...prev, [file.name]: "processing" }))
+      
       const formData = new FormData()
       formData.append("file", file)
+
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          const newProgress = prev + 5
+          if (newProgress >= 90) {
+            clearInterval(progressInterval)
+            return 90
+          }
+          return newProgress
+        })
+      }, 300)
 
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       })
+
+      clearInterval(progressInterval)
+      setUploadProgress(100)
 
       if (!response.ok) {
         throw new Error("Upload failed")
@@ -94,12 +110,8 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
 
       toast({
         title: "Upload Successful",
-        description: `${file.name} has been processed and added to the repository.`,
+        description: `${file.name} has been processed and added to the knowledge base.`,
       })
-
-      if (onUploadComplete) {
-        onUploadComplete(data.paper)
-      }
     } catch (error) {
       console.error("Upload error:", error)
       setUploadStatus((prev) => ({ ...prev, [file.name]: "error" }))
@@ -110,6 +122,11 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
         variant: "destructive",
       })
     } finally {
+      // Reset progress after a brief delay
+      setTimeout(() => {
+        setUploadProgress(0)
+      }, 1000)
+      
       // Check if all uploads are complete
       setIsUploading((prev) => {
         const allComplete = Object.values(uploadStatus).every((status) => status === "success" || status === "error")
@@ -132,7 +149,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
   }
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Upload Research Papers</CardTitle>
         <CardDescription>Upload PDF papers to add them to the ISU Scholar repository</CardDescription>
@@ -165,6 +182,16 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf" multiple />
         </div>
 
+        {uploadProgress > 0 && (
+          <div className="mt-4">
+            <div className="flex justify-between text-sm mb-1">
+              <span>Processing documents...</span>
+              <span>{uploadProgress}%</span>
+            </div>
+            <Progress value={uploadProgress} className="w-full" />
+          </div>
+        )}
+
         {uploadedFiles.length > 0 && (
           <div className="mt-4">
             <h4 className="text-sm font-medium mb-2">Uploaded Files</h4>
@@ -177,6 +204,9 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
                   </div>
                   <div className="flex items-center">
                     {uploadStatus[file.name] === "pending" && (
+                      <span className="text-xs text-muted-foreground mr-2">Pending</span>
+                    )}
+                    {uploadStatus[file.name] === "processing" && (
                       <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                     )}
                     {uploadStatus[file.name] === "success" && <Check className="h-4 w-4 text-green-500" />}
@@ -197,4 +227,3 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
     </Card>
   )
 }
-

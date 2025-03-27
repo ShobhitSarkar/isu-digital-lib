@@ -4,6 +4,9 @@ import { ResearchTopics } from "@/components/research-topics"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ISULogo } from "@/components/isu-logo"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { MessageSquare } from "lucide-react"
 
 export default function Home() {
   return (
@@ -15,6 +18,12 @@ export default function Home() {
             <h1 className="text-xl font-bold text-cardinal dark:text-gold">ISU Scholar Search</h1>
           </div>
           <div className="flex items-center gap-4">
+            <Button variant="outline" asChild>
+              <Link href="/ai-chat">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                AI Research Chat
+              </Link>
+            </Button>
             <ModeToggle />
           </div>
         </div>
