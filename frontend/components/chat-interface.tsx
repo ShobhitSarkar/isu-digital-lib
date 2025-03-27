@@ -157,7 +157,9 @@ export function ChatInterface() {
         ...prev,
         {
           id: Date.now().toString(),
-          content: `I've processed "${files[0].name}". You can now ask questions about this document.`,
+          content: files && files.length > 0 
+            ? `I've processed "${files[0].name}". You can now ask questions about this document.`
+            : "I've processed your document. You can now ask questions about it.",
           sender: "assistant",
           timestamp: new Date(),
         },

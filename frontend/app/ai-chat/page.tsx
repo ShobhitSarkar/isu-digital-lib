@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { EnhancedFileUpload } from "@/components/enhanced-file-upload"
+import { EnhancedFileUpload } from "@/components/file-upload"
 import { ChatInterface } from "@/components/chat-interface"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
