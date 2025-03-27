@@ -34,48 +34,29 @@ export function Search() {
     setIsSearching(true)
     setHasSearched(true)
 
-    // Simulate API call with timeout
-    setTimeout(() => {
-      // Mock results
-      const mockResults: SearchResult[] = [
-        {
-          id: "1",
-          title: "Machine Learning Applications in Agricultural Monitoring Systems",
-          author: "Jane Smith",
-          date: "2023-05-15",
-          summary:
-            "This research explores the integration of machine learning algorithms in agricultural monitoring systems to enhance crop yield prediction and resource management in Iowa's farming sector.",
-          department: "Computer Science",
-          type: "Thesis",
-          relevance: 0.95,
+    try {
+      // Call our search API
+      const response = await fetch("/api/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        {
-          id: "2",
-          title: "Sustainable Energy Solutions for Rural Communities",
-          author: "John Doe",
-          date: "2022-11-03",
-          summary:
-            "An analysis of renewable energy implementation strategies tailored for rural Iowa communities, with focus on economic viability and environmental impact assessment.",
-          department: "Engineering",
-          type: "Journal Article",
-          relevance: 0.87,
-        },
-        {
-          id: "3",
-          title: "Data-Driven Approaches to Climate Resilience in Agriculture",
-          author: "Alex Johnson",
-          date: "2023-02-22",
-          summary:
-            "This paper examines how data analytics and predictive modeling can help Iowa farmers adapt to changing climate conditions and improve crop resilience.",
-          department: "Agronomy",
-          type: "Research Paper",
-          relevance: 0.82,
-        },
-      ]
+        body: JSON.stringify({
+          query,
+          filters: {}, // Add filters as needed
+        }),
+      })
 
-      setResults(mockResults)
+      if (!response.ok) throw new Error("Search failed")
+
+      const data = await response.json()
+      setResults(data.results)
+    } catch (error) {
+      console.error("Search error:", error)
+      setResults([])
+    } finally {
       setIsSearching(false)
-    }, 1500)
+    }
   }
 
   return (
