@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.0",
     "@hookform/resolvers": "^3.9.1",
+    "@qdrant/js-client-rest": "^1.13.0",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-aspect-ratio": "^1.1.1",
@@ -43,10 +45,16 @@
     "cmdk": "1.0.4",
     "date-fns": "^3.0.0",
     "embla-carousel-react": "8.5.1",
+    "fs": "latest",
     "input-otp": "1.4.1",
+    "langchain": "^0.3.19",
     "lucide-react": "^0.454.0",
     "next": "15.1.0",
     "next-themes": "^0.4.4",
+    "openai": "^4.90.0",
+    "path": "latest",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^5.0.375",
     "react": "^18.2.0",
     "react-day-picker": "8.10.1",
     "react-dom": "^18.2.0",
@@ -57,11 +65,7 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.6",
-    "zod": "^3.24.1",
-    "@google/generative-ai": "latest",
-    "@qdrant/js-client-rest": "latest",
-    "fs": "latest",
-    "path": "latest"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22",

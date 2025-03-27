@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+node_modules/
 
 # next.js
 /.next/
@@ -26,3 +27,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/tmp
+../qdrant_storage/
