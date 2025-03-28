@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'isu-semantic-serarch',
+  description: 'Created for COMS 402 Spring 2025, Group 1',
   generator: 'v0.dev',
 }
 

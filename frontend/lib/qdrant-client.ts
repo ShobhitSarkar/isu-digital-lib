@@ -1,3 +1,4 @@
+// lib/qdrant-client.ts
 import { QdrantClient } from "@qdrant/js-client-rest"
 
 // Singleton pattern for Qdrant client
@@ -27,7 +28,7 @@ export async function ensureCollection() {
       // Create collection with appropriate dimensions
       await client.createCollection(COLLECTION_NAME, {
         vectors: {
-          size: 1536, // Adjust based on your embedding model
+          size: 1536, // Size for OpenAI embeddings
           distance: "Cosine",
         },
       })
@@ -38,4 +39,3 @@ export async function ensureCollection() {
     throw error
   }
 }
-

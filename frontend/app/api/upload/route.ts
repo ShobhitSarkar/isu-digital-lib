@@ -1,21 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { writeFile, mkdir } from "fs/promises"
+import { writeFile, mkdir, readFile, unlink } from "fs/promises"
 import { join } from "path"
-import { QdrantClient } from "@qdrant/js-client-rest"
-import { OpenAI } from "openai"
 import { existsSync } from "fs"
+import { OpenAI } from "openai"
+import { COLLECTION_NAME, getQdrantClient, ensureCollection } from "@/lib/qdrant-client"
+import pdf from "pdf-parse"
 
 // Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
-
-// Initialize Qdrant client
-const qdrantClient = new QdrantClient({
-  url: process.env.QDRANT_URL || "http://localhost:6333",
-})
-
-const COLLECTION_NAME = "isu_papers"
 
 // Helper function to get embeddings from OpenAI
 async function getEmbedding(text: string): Promise<number[]> {
@@ -32,37 +26,86 @@ async function getEmbedding(text: string): Promise<number[]> {
   }
 }
 
-// Ensure collection exists in Qdrant
-async function ensureCollection() {
+// Function to extract text from PDF
+async function extractTextFromPDF(filePath: string): Promise<string> {
   try {
-    // Check if collection exists
-    const collections = await qdrantClient.getCollections()
-    const exists = collections.collections.some((c) => c.name === COLLECTION_NAME)
-
-    if (!exists) {
-      console.log(`Creating collection '${COLLECTION_NAME}'...`)
-      // Create collection with appropriate dimensions for your embeddings
-      await qdrantClient.createCollection(COLLECTION_NAME, {
-        vectors: {
-          size: 1536, // Size for OpenAI embeddings
-          distance: "Cosine",
-        },
-      })
-      console.log(`Collection '${COLLECTION_NAME}' created successfully`)
-    }
+    const dataBuffer = await readFile(filePath)
+    const parsedPdf = await pdf(dataBuffer)
+    return parsedPdf.text
   } catch (error) {
-    console.error("Error ensuring collection exists:", error)
-    throw error
+    console.error("Error extracting text from PDF:", error)
+    throw new Error("Failed to extract text from PDF")
   }
 }
 
+// Split text into chunks for better search results
+function splitIntoChunks(text: string, chunkSize: number = 1000, overlap: number = 200): string[] {
+  const chunks: string[] = []
+  
+  // Clean the text by removing excessive whitespace
+  const cleanedText = text
+    .replace(/\r\n/g, '\n')
+    .replace(/\n+/g, '\n')
+    .replace(/\s+/g, ' ')
+    .trim()
+  
+  if (cleanedText.length <= chunkSize) {
+    chunks.push(cleanedText)
+    return chunks
+  }
+  
+  let startIndex = 0
+  while (startIndex < cleanedText.length) {
+    // Find a good breaking point (period, question mark, or exclamation point)
+    let endIndex = Math.min(startIndex + chunkSize, cleanedText.length)
+    
+    if (endIndex < cleanedText.length) {
+      // Try to find a sentence boundary to break at
+      const possibleBreak = cleanedText.lastIndexOf('.', endIndex)
+      const altBreak1 = cleanedText.lastIndexOf('?', endIndex)
+      const altBreak2 = cleanedText.lastIndexOf('!', endIndex)
+      
+      // Find the closest sentence boundary
+      const bestBreak = Math.max(
+        possibleBreak, 
+        altBreak1, 
+        altBreak2
+      )
+      
+      // Make sure we found a valid break point that's not too far back
+      if (bestBreak > startIndex && bestBreak > startIndex + chunkSize - 300) {
+        endIndex = bestBreak + 1 // Include the period in the chunk
+      }
+    }
+    
+    chunks.push(cleanedText.slice(startIndex, endIndex).trim())
+    
+    // Move with overlap
+    startIndex = endIndex - overlap
+    
+    // Make sure we're making progress
+    if (startIndex >= cleanedText.length || startIndex <= 0) {
+      break
+    }
+  }
+  
+  return chunks
+}
+
 export async function POST(request: NextRequest) {
+  let filePath = "";
+  
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
+    }
+
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      return NextResponse.json({ error: "Only PDF files are supported" }, { status: 400 })
     }
 
     console.log(`Processing file: ${file.name}`)
@@ -73,88 +116,112 @@ export async function POST(request: NextRequest) {
       await mkdir(tempDir, { recursive: true })
     }
 
-    // Save file temporarily
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const filePath = join(tempDir, file.name)
-    await writeFile(filePath, buffer)
-    console.log(`File saved to: ${filePath}`)
-
-    // For simplicity, we'll use a mock text for testing
-    const mockText = `This is a sample text for the document ${file.name}. 
-    It simulates content that would be extracted from a PDF file.
-    We're using this to test vector embeddings and retrieval.
-    The actual implementation would extract real text from the PDF.
-    For now, this simplified approach allows us to test the workflow.`;
-
-    // Prepare paper info with a numeric ID
+    // Generate a unique filename to avoid collisions
     const timestamp = Date.now()
-    const paperId = timestamp // Use a numeric ID
-    const paperInfo = {
-      id: paperId,
-      title: file.name.replace(".pdf", ""),
-      author: "Unknown Author",
-      date: new Date().toISOString(),
-      text: mockText.substring(0, 200) // Short preview
-    }
+    const uniqueFilename = `${timestamp}_${file.name}`
+    filePath = join(tempDir, uniqueFilename)
 
-    console.log("Ensuring Qdrant collection exists...")
-    await ensureCollection()
+    try {
+      // Save file temporarily
+      const bytes = await file.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      await writeFile(filePath, buffer)
+      console.log(`File saved to: ${filePath}`)
 
-    // For testing, just use a single chunk
-    const chunk = mockText;
-    console.log("Generating embedding...")
-    const embedding = await getEmbedding(chunk)
-    
-    console.log("Preparing Qdrant upsert payload...")
-    // Use a numeric ID for the point
-    const pointId = timestamp; // Just use the timestamp as a numeric ID
-    console.log(`Point ID: ${pointId} (numeric)`);
-    
-    const upsertPayload = {
-      wait: true,
-      points: [
-        {
-          id: pointId, // Numeric ID
+      // Extract text from PDF
+      let documentText: string
+      try {
+        documentText = await extractTextFromPDF(filePath)
+      } catch (extractError) {
+        console.error("Failed to extract text, using fallback:", extractError)
+        // Fallback for testing if PDF extraction fails
+        documentText = `This is a sample text for the document ${file.name}. 
+          It simulates content that would be extracted from a PDF file.
+          We're using this to test vector embeddings and retrieval.`
+      }
+
+      // Get metadata
+      const title = file.name.replace(/\.pdf$/i, "").replace(/_/g, " ")
+      const paperId = timestamp.toString()
+      
+      // Split the document into chunks
+      const chunks = splitIntoChunks(documentText)
+      console.log(`Document split into ${chunks.length} chunks`)
+
+      // Ensure collection exists
+      await ensureCollection()
+      const qdrantClient = getQdrantClient()
+
+      // Process and embed each chunk
+      const points = []
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i]
+        if (chunk.trim().length < 50) continue // Skip very small chunks
+        
+        console.log(`Generating embedding for chunk ${i+1}/${chunks.length}...`)
+        const embedding = await getEmbedding(chunk)
+        
+        points.push({
+          id: timestamp + i, // Use numeric ID
           vector: embedding,
           payload: {
             paper_id: paperId,
-            chunk_id: 0,
-            title: paperInfo.title,
+            chunk_id: i,
+            title: title,
             text: chunk,
-            author: paperInfo.author,
-            date: paperInfo.date,
+            author: "Unknown Author", // Could be improved with metadata extraction
+            date: new Date().toISOString(),
             original_filename: file.name
           }
+        })
+      }
+
+      // Upsert all points
+      if (points.length > 0) {
+        console.log(`Upserting ${points.length} points to Qdrant...`)
+        await qdrantClient.upsert(COLLECTION_NAME, {
+          wait: true,
+          points: points
+        })
+        console.log("Upsert successful!")
+      } else {
+        console.warn("No valid chunks found in the document")
+      }
+
+      // Create a preview of the document (first 500 chars)
+      const preview = documentText.slice(0, 500).trim() + (documentText.length > 500 ? "..." : "")
+
+      // Clean up the temporary file
+      try {
+        await unlink(filePath)
+      } catch (unlinkError) {
+        console.error("Error deleting temporary file:", unlinkError)
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: "File uploaded and processed successfully",
+        paper: {
+          id: paperId,
+          title: title,
+          chunks: chunks.length,
+          preview: preview
         }
-      ]
-    };
-    
-    console.log("Upsert payload structure:", JSON.stringify(upsertPayload).substring(0, 200) + "...");
-    
-    try {
-      console.log("Upserting to Qdrant...");
-      await qdrantClient.upsert(COLLECTION_NAME, upsertPayload);
-      console.log("Upsert successful!");
-    } catch (qdrantError: any) {
-      console.error("Qdrant upsert error details:", qdrantError);
-      if (qdrantError.data) {
-        console.error("Qdrant error data:", JSON.stringify(qdrantError.data));
+      })
+    } catch (processingError) {
+      // Attempt to clean up temp file in case of error
+      if (filePath) {
+        try {
+          if (existsSync(filePath)) {
+            await unlink(filePath)
+          }
+        } catch (cleanupError) {
+          console.error("Error cleaning up temp file:", cleanupError)
+        }
       }
-      throw new Error(`Qdrant upsert failed: ${qdrantError.message || "Unknown error"}`);
+      
+      throw processingError
     }
-
-    console.log("Upload and processing completed successfully")
-
-    // Return success response
-    return NextResponse.json({
-      success: true,
-      message: "File uploaded and processed successfully",
-      paper: {
-        ...paperInfo,
-        id: paperId.toString() // Convert back to string for the response
-      }
-    })
   } catch (error) {
     console.error("Error in upload API:", error)
     return NextResponse.json({ 

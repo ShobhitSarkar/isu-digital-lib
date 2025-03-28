@@ -69,6 +69,7 @@
   },
   "devDependencies": {
     "@types/node": "^22",
+    "@types/pdf-parse": "^1.1.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8",
