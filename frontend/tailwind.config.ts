@@ -54,8 +54,8 @@ const config = {
           foreground: "hsl(var(--card-foreground))",
         },
         // Iowa State Colors
-        cardinal: "hsl(var(--cardinal))",
-        gold: "hsl(var(--gold))",
+        cardinal: "oklch(var(--cardinal))",
+        gold: "oklch(var(--gold))",
       },
       borderRadius: {
         lg: "var(--radius)",
