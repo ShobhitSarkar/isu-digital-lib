@@ -2,6 +2,7 @@ import Header from "@/components/header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import SearchTab from "@/components/search-tab"
 import ChatTab from "@/components/chat-tab"
+import "./globals.css"
 
 export default function Home() {
   return (
