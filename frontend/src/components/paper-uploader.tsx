@@ -36,31 +36,28 @@ export default function PaperUploader({ onUpload }: PaperUploaderProps) {
     }
   }
 
-  const handleFiles = (files: FileList) => {
+  const handleFiles = async (files: FileList) => {
     setIsUploading(true)
-
-    // Convert FileList to array
     const fileArray = Array.from(files)
 
-    // Filter for PDFs and other document types
-    const validFiles = fileArray.filter(
-      (file) => file.type === "application/pdf" || file.type.includes("document") || file.type.includes("text/"),
-    )
+    const formData = new FormData()
+    fileArray.forEach((file) => formData.append("files", file))
 
-    // Create uploaded paper objects
-    const papers: UploadedPaper[] = validFiles.map((file) => ({
-      id: Math.random().toString(36).substring(2, 9),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      uploadedAt: new Date(),
-    }))
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
 
-    // Simulate processing delay
-    setTimeout(() => {
-      onUpload(papers)
+      if (!res.ok) throw new Error("Upload failed")
+
+      const uploadedPapers: UploadedPaper[] = await res.json()
+      onUpload(uploadedPapers)
+    } catch (err) {
+      console.error("Upload failed", err)
+    } finally {
       setIsUploading(false)
-    }, 1000)
+    }
   }
 
   return (
