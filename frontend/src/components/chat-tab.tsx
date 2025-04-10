@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import PaperUploader from "@/components/paper-uploader"
 import ChatInterface from "@/components/chat-interface"
@@ -19,7 +19,10 @@ export default function ChatTab() {
   const [uploadedPapers, setUploadedPapers] = useState<UploadedPaper[]>([])
 
   const handlePaperUpload = (papers: UploadedPaper[]) => {
-    setUploadedPapers((prev) => [...prev, ...papers])
+    setUploadedPapers((prev) => {
+      const updated = [...prev, ...papers]
+      return updated
+    })
   }
 
   return (
@@ -39,19 +42,23 @@ export default function ChatTab() {
           <CardContent>
             <PaperUploader onUpload={handlePaperUpload} />
 
-            {uploadedPapers.length > 0 && (
+            {uploadedPapers.length > 0 ? (
               <ScrollArea className="h-[400px] mt-4">
                 <div className="space-y-2">
                   {uploadedPapers.map((paper) => (
                     <div key={paper.id} className="p-3 border rounded-md">
                       <p className="font-medium truncate">{paper.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {(paper.size / 1024).toFixed(1)} KB • {paper.uploadedAt.toLocaleString()}
+                        {(paper.uploadedAt instanceof Date
+                          ? paper.uploadedAt.toLocaleString()
+                          : new Date(paper.uploadedAt).toLocaleString())}
                       </p>
                     </div>
                   ))}
                 </div>
               </ScrollArea>
+            ) : (
+              <p className="text-sm text-muted-foreground mt-2">No papers uploaded yet.</p>
             )}
           </CardContent>
         </Card>

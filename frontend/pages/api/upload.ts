@@ -92,10 +92,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
     );
 
-    console.log("✅ Sample Point Object:");
-    console.dir(points[0], { depth: null });
-    console.log("➡️ Vector length:", points[0].vector.length);
-
     try {
         await qdrant.upsert(COLLECTION, { points, wait: true });
       } catch (err: any) {
@@ -114,7 +110,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       optimizers_config: { indexing_threshold: 20000 },
     });
 
-    res.status(200).json({ message: "Upload and embedding complete.", chunks: points.length });
+    const uploadedPaperMeta = [{
+      id: file.newFilename || randomUUID(),
+      name: file.originalFilename,
+      size: file.size,
+      type: file.mimetype,
+      uploadedAt: new Date().toISOString(),
+    }];
+
+    res.status(200).json(uploadedPaperMeta);
   } catch (err: any) {
     console.error("Upload error:", err);
     res.status(500).json({ error: err.message || "Upload failed." });

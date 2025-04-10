@@ -20,9 +20,7 @@ export default function PaperUploader({ onUpload }: PaperUploaderProps) {
     setIsDragging(true)
   }
 
-  const handleDragLeave = () => {
-    setIsDragging(false)
-  }
+  const handleDragLeave = () => setIsDragging(false)
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
@@ -38,8 +36,8 @@ export default function PaperUploader({ onUpload }: PaperUploaderProps) {
 
   const handleFiles = async (files: FileList) => {
     setIsUploading(true)
-    const fileArray = Array.from(files)
 
+    const fileArray = Array.from(files)
     const formData = new FormData()
     fileArray.forEach((file) => formData.append("files", file))
 
@@ -51,8 +49,17 @@ export default function PaperUploader({ onUpload }: PaperUploaderProps) {
 
       if (!res.ok) throw new Error("Upload failed")
 
-      const uploadedPapers: UploadedPaper[] = await res.json()
-      onUpload(uploadedPapers)
+      const uploadedPapers = await res.json()
+
+      if (Array.isArray(uploadedPapers)) {
+        const parsedPapers = uploadedPapers.map((paper) => ({
+          ...paper,
+          uploadedAt: new Date(paper.uploadedAt),
+        }))
+        onUpload(parsedPapers)
+      } else {
+        console.error("Upload failed: Expected array but got:", uploadedPapers)
+      }
     } catch (err) {
       console.error("Upload failed", err)
     } finally {
@@ -64,7 +71,9 @@ export default function PaperUploader({ onUpload }: PaperUploaderProps) {
     <div className="space-y-4">
       <div
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          isDragging ? "border-cardinal bg-cardinal/5 dark:border-gold dark:bg-gold/5" : "border-muted-foreground/25"
+          isDragging
+            ? "border-cardinal bg-cardinal/5 dark:border-gold dark:bg-gold/5"
+            : "border-muted-foreground/25"
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
