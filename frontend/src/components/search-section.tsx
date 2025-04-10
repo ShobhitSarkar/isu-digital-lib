@@ -69,7 +69,7 @@ export default function SearchSection({ onSearch }: SearchSectionProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button type="submit" className="bg-cardinal hover:bg-cardinal/90 text-white">
+        <Button type="submit" style={{ backgroundColor: 'oklch(0.85 0.16 85)', color: 'oklch(0.45 0.18 25)' }}>
           Ask
         </Button>
       </form>
