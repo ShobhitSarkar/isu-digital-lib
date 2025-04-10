@@ -1,7 +1,7 @@
+// src/components/search-section.tsx
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -15,19 +15,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export default function SearchSection() {
+interface SearchSectionProps {
+  onSearch: (query: string) => void;
+}
+
+export default function SearchSection({ onSearch }: SearchSectionProps) {
   const [query, setQuery] = useState("")
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Search functionality will be implemented in the backend
-    console.log("Search query:", query)
+    e.preventDefault();
+    onSearch(query);
   }
 
   return (
     <section className="w-full max-w-4xl mx-auto">
       <p className="text-center text-muted-foreground mb-6">
-        Search the repository using natural language to find relevant academic papers and research
+        Ask questions about the academic papers in the repository
       </p>
 
       <form onSubmit={handleSearch} className="flex gap-2">
@@ -35,7 +38,7 @@ export default function SearchSection() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             type="text"
-            placeholder="Try 'Recent advances in sustainable agriculture in Iowa' or 'Machine learning applications in crop yield prediction'"
+            placeholder="Try 'What are the main challenges in wireless sensor networks?' or 'How are hand gestures recognized in computer vision?'"
             className="pl-10 pr-4"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -67,7 +70,7 @@ export default function SearchSection() {
         </DropdownMenu>
 
         <Button type="submit" className="bg-cardinal hover:bg-cardinal/90 text-white">
-          Search
+          Ask
         </Button>
       </form>
     </section>

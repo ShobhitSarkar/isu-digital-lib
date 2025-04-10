@@ -1,55 +1,31 @@
+// src/components/results-section.tsx
 "use client"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Bookmark, BookmarkCheck, ChevronLeft, ChevronRight } from "lucide-react"
+import { Bookmark, BookmarkCheck, ChevronLeft, ChevronRight, Copy } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 
-// Mock data for demonstration
-const mockResults = [
-  {
-    id: 1,
-    title: "Machine Learning Applications in Agricultural Yield Prediction",
-    authors: "Johnson, A., Smith, B., & Williams, C.",
-    year: 2023,
-    department: "Computer Science",
-    type: "Research Paper",
-    abstract:
-      "This paper explores the application of various machine learning algorithms to predict agricultural yields based on historical data and environmental factors. The study demonstrates significant improvements in prediction accuracy compared to traditional statistical methods.",
-    saved: false,
-  },
-  {
-    id: 2,
-    title: "Sustainable Energy Solutions for Rural Communities",
-    authors: "Garcia, M. & Thompson, R.",
-    year: 2022,
-    department: "Engineering",
-    type: "Thesis",
-    abstract:
-      "This thesis investigates cost-effective and sustainable energy solutions for rural communities in Iowa. The research includes case studies of implemented systems and their economic and environmental impacts over a five-year period.",
-    saved: true,
-  },
-  {
-    id: 3,
-    title: "Genetic Diversity in Iowa's Native Prairie Plants",
-    authors: "Lee, S., Johnson, P., & Miller, T.",
-    year: 2021,
-    department: "Agriculture",
-    type: "Conference Paper",
-    abstract:
-      "This paper presents findings on the genetic diversity of native prairie plants in Iowa's preserved natural areas. The research highlights the importance of conservation efforts and provides recommendations for maintaining biodiversity.",
-    saved: false,
-  },
-]
+interface ResultsSectionProps {
+  results: any[];
+  loading: boolean;
+}
 
-export default function ResultsSection() {
-  const [results, setResults] = useState(mockResults)
-  const [loading, setLoading] = useState(false)
-
-  const toggleSaved = (id: number) => {
-    setResults(results.map((result) => (result.id === id ? { ...result, saved: !result.saved } : result)))
+export default function ResultsSection({ results, loading }: ResultsSectionProps) {
+  const [savedResults, setSavedResults] = useState<Record<string, boolean>>({});
+  
+  const toggleSaved = (id: string) => {
+    setSavedResults(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  }
+  
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    // You could add a toast notification here
   }
 
   return (
@@ -76,7 +52,7 @@ export default function ResultsSection() {
             </Card>
           ))}
         </div>
-      ) : (
+      ) : results.length > 0 ? (
         <div className="space-y-4 flex-1">
           {results.map((result) => (
             <Card key={result.id} className="w-full">
@@ -89,47 +65,74 @@ export default function ResultsSection() {
                     onClick={() => toggleSaved(result.id)}
                     className="text-muted-foreground hover:text-cardinal"
                   >
-                    {result.saved ? <BookmarkCheck className="h-5 w-5 text-gold" /> : <Bookmark className="h-5 w-5" />}
-                    <span className="sr-only">{result.saved ? "Remove from saved" : "Save document"}</span>
+                    {savedResults[result.id] ? <BookmarkCheck className="h-5 w-5 text-gold" /> : <Bookmark className="h-5 w-5" />}
+                    <span className="sr-only">{savedResults[result.id] ? "Remove from saved" : "Save document"}</span>
                   </Button>
                 </div>
                 <CardDescription>
-                  {result.authors} • {result.year}
+                  {result.authors ? (Array.isArray(result.authors) ? result.authors.join(', ') : result.authors) : 'Unknown Author'} • {result.year || 'n.d.'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-3">{result.abstract}</p>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline" className="bg-cardinal/10 text-cardinal dark:bg-gold/10 dark:text-gold">
-                    {result.department}
-                  </Badge>
-                  <Badge variant="outline" className="bg-cardinal/10 text-cardinal dark:bg-gold/10 dark:text-gold">
-                    {result.type}
-                  </Badge>
+                  {result.department && (
+                    <Badge variant="outline" className="bg-cardinal/10 text-cardinal dark:bg-gold/10 dark:text-gold">
+                      {result.department}
+                    </Badge>
+                  )}
+                  {result.documentType && (
+                    <Badge variant="outline" className="bg-cardinal/10 text-cardinal dark:bg-gold/10 dark:text-gold">
+                      {result.documentType}
+                    </Badge>
+                  )}
                 </div>
+                
+                {result.citation && (
+                  <div className="mt-4 p-3 bg-muted/30 rounded-md flex justify-between items-center">
+                    <p className="text-sm text-muted-foreground">{result.citation}</p>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => copyToClipboard(result.citation)}
+                      className="ml-2"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="pt-2">
-                <Button
-                  variant="link"
-                  className="text-cardinal hover:text-cardinal/80 dark:text-gold dark:hover:text-gold/80 p-0"
-                >
-                  View Full Document
-                </Button>
+                {result.uri && (
+                  <Button
+                    variant="link"
+                    className="text-cardinal hover:text-cardinal/80 dark:text-gold dark:hover:text-gold/80 p-0"
+                    onClick={() => window.open(result.uri, '_blank')}
+                  >
+                    View Full Document
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
         </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">No results found. Try a different search query.</p>
+        </div>
       )}
 
-      <div className="flex justify-between items-center mt-6">
-        <Button variant="outline" size="sm" disabled>
-          <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-        </Button>
-        <div className="text-sm text-muted-foreground">Page 1 of 1</div>
-        <Button variant="outline" size="sm" disabled>
-          Next <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
-      </div>
+      {results.length > 0 && (
+        <div className="flex justify-between items-center mt-6">
+          <Button variant="outline" size="sm" disabled>
+            <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+          </Button>
+          <div className="text-sm text-muted-foreground">Page 1 of 1</div>
+          <Button variant="outline" size="sm" disabled>
+            Next <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      )}
     </section>
   )
 }
