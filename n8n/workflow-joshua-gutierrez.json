@@ -2,9 +2,64 @@
   "nodes": [
     {
       "parameters": {
-        "options": {}
+        "dataType": "binary",
+        "binaryMode": "specificField",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Title",
+                "value": "={{ $json.Title }}"
+              },
+              {
+                "name": "Filename",
+                "value": "={{ $json.Filename }}"
+              },
+              {
+                "name": "=Date",
+                "value": "={{ $json.Date }}"
+              },
+              {
+                "name": "Authors",
+                "value": "={{ $json.Authors }}"
+              },
+              {
+                "name": "Advisors",
+                "value": "={{ $json.Advisor }}"
+              },
+              {
+                "name": "Abstract",
+                "value": "={{ $json.Abstract }}"
+              },
+              {
+                "name": "Academic Unit",
+                "value": "={{ $json['Academic Unit'] }}"
+              },
+              {
+                "name": "Type",
+                "value": "={{ $json['Subject Categories'] }}"
+              },
+              {
+                "name": "Keywords",
+                "value": "={{ $json.Keywords }}"
+              },
+              {
+                "name": "=DOI",
+                "value": "={{ $json.DOI }}"
+              },
+              {
+                "name": "Permanent Link",
+                "value": "={{ $json['Permanent Link'] }}"
+              },
+              {
+                "name": "Collections",
+                "value": "={{ $json.Collections }}"
+              }
+            ]
+          }
+        }
       },
-      "id": "d1a1ab17-b9ac-44a2-bad6-2ecb157b10b8",
+      "id": "eef26656-105c-454c-9f77-ae54c02a65a3",
       "name": "Data Loader",
       "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
       "position": [
@@ -17,7 +72,7 @@
       "parameters": {
         "chunkSize": 3000
       },
-      "id": "416783b8-39a1-4a8c-bee6-0b0be82d9534",
+      "id": "51a885df-e880-4fb1-81da-c7ce72208f51",
       "name": "Token Splitter",
       "type": "@n8n/n8n-nodes-langchain.textSplitterTokenSplitter",
       "position": [
@@ -31,12 +86,12 @@
         "mode": "insert",
         "qdrantCollection": {
           "__rl": true,
-          "value": "repository",
+          "value": "=repository",
           "mode": "id"
         },
         "options": {}
       },
-      "id": "034950c4-ce62-4b61-8e66-26aa0dc5f342",
+      "id": "e4233f6e-8d73-4132-afa3-93f32a972db3",
       "name": "Qdrant Vector Store",
       "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
       "position": [
@@ -58,7 +113,7 @@
       "parameters": {
         "options": {}
       },
-      "id": "cc9c0f8b-3706-4159-9dae-3eeb478faeaa",
+      "id": "caa9f283-bfb9-45e4-9cd7-a873ece43287",
       "name": "Loop Over Items",
       "type": "n8n-nodes-base.splitInBatches",
       "position": [
@@ -70,7 +125,7 @@
     },
     {
       "parameters": {},
-      "id": "c893a06c-6411-4f0e-8c33-1d70c23c5e3a",
+      "id": "2b7f8281-4bd1-4402-a93b-93e1376c636c",
       "name": "Wait",
       "type": "n8n-nodes-base.wait",
       "position": [
@@ -82,7 +137,7 @@
     },
     {
       "parameters": {},
-      "id": "9e99d172-9e40-4961-bf69-6a5b35ae21f1",
+      "id": "e785ebb3-fe92-44de-a9eb-1683fe5f8e5f",
       "name": "When clicking ‘Test workflow’",
       "type": "n8n-nodes-base.manualTrigger",
       "position": [
@@ -93,29 +148,76 @@
     },
     {
       "parameters": {
+        "modelName": "models/gemini-2.0-flash-exp",
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "id": "de7ddf00-48db-4679-bb2b-c5d32952c836",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        2480,
+        1400
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CT1IsCjWQvUZPRuh",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
         "mode": "combine",
         "combineBy": "combineAll",
         "options": {}
       },
-      "id": "0a191063-8bbf-4be5-8e95-3d42ac00bbfe",
+      "id": "0716f0cc-2284-4cb8-9442-7a0363361d1b",
       "name": "Merge",
       "type": "n8n-nodes-base.merge",
       "position": [
-        2140,
+        2180,
         1620
       ],
       "typeVersion": 3
     },
     {
       "parameters": {
+        "text": "={{ $json.data }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "title",
+              "description": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are an expert extraction algorithm.\nOnly extract relevant information from the text.\nIf you do not know the value of an attribute asked to extract, you may omit the attribute's value."
+        }
+      },
+      "id": "caad8a7e-c065-4238-af60-27f9eaa245ad",
+      "name": "Extract Meta Data",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        2380,
+        1240
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {
         "options": {}
       },
-      "id": "6a0e6d39-ca70-48da-ad59-58416799ad9d",
+      "id": "4f48286b-c03b-432d-836f-2bbc0c5689d2",
       "name": "Get File Contents",
       "type": "n8n-nodes-base.extractFromFile",
       "position": [
-        2140,
-        1220
+        2180,
+        1240
       ],
       "typeVersion": 1
     },
@@ -129,7 +231,7 @@
         },
         "options": {}
       },
-      "id": "b3040f86-8fcd-491e-b57d-09e3fdd6ca6a",
+      "id": "080571a6-49b9-437b-9048-e8501caea50e",
       "name": "Download File From Google Drive",
       "type": "n8n-nodes-base.googleDrive",
       "position": [
@@ -150,23 +252,20 @@
         "returnAll": true,
         "filter": {
           "driveId": {
-            "__rl": true,
-            "value": "My Drive",
             "mode": "list",
-            "cachedResultName": "My Drive",
-            "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+            "value": "My Drive"
           },
           "folderId": {
             "__rl": true,
-            "value": "1YEOFDkzPNbjsvipqBXj1ph8Sdoeqd02P",
+            "value": "1lWiXVNep-RpRaws1ZOOGWWgXub5VLMOn",
             "mode": "list",
-            "cachedResultName": "Google AI Studio",
-            "cachedResultUrl": "https://drive.google.com/drive/folders/1YEOFDkzPNbjsvipqBXj1ph8Sdoeqd02P"
+            "cachedResultName": "testing",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1lWiXVNep-RpRaws1ZOOGWWgXub5VLMOn"
           }
         },
         "options": {}
       },
-      "id": "ce61861b-0f80-4ddb-9732-0ec1b9532c21",
+      "id": "31bffec4-b63b-4925-8b6c-30a4549c02db",
       "name": "Find File Ids in Google Drive Folder",
       "type": "n8n-nodes-base.googleDrive",
       "position": [
@@ -186,11 +285,11 @@
         "model": "text-embedding-3-large",
         "options": {}
       },
-      "id": "4df1f472-22a6-4d74-bff2-75537b2ad9fa",
+      "id": "82b71f83-cb03-4ab1-883a-982f8964025a",
       "name": "text-embeddings-3-large",
       "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
       "position": [
-        1800,
+        1840,
         2140
       ],
       "typeVersion": 1,
@@ -215,7 +314,7 @@
         },
         "options": {}
       },
-      "id": "35b0f137-f5bb-4e21-acb7-d31b556ec381",
+      "id": "5d309ce5-fd4f-4a41-be18-afa0989a9ab7",
       "name": "Google Folder ID",
       "type": "n8n-nodes-base.set",
       "position": [
@@ -226,260 +325,14 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "11fa71e9-6cbc-4183-9439-e3379b2b970e",
-              "name": "qdrant_collection_name",
-              "type": "string",
-              "value": "repository"
-            }
-          ]
-        },
         "options": {}
       },
-      "id": "553fe19a-141f-4536-ae84-266b0f5361c6",
-      "name": "Qdrant Collection Name",
-      "type": "n8n-nodes-base.set",
+      "id": "e3b786fd-e769-42f2-bcd9-0be00f5c9cb0",
+      "name": "gpt-4o-mini1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "position": [
-        660,
-        1520
-      ],
-      "typeVersion": 3.4
-    },
-    {
-      "parameters": {
-        "fieldsToSummarize": {
-          "values": [
-            {
-              "aggregation": "append",
-              "field": "id"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "5a83befd-6165-49fe-ae46-eee96652c8e3",
-      "name": "File Id List",
-      "type": "n8n-nodes-base.summarize",
-      "position": [
-        660,
-        1700
-      ],
-      "typeVersion": 1.1
-    },
-    {
-      "parameters": {
-        "mode": "combine",
-        "combineBy": "combineByPosition",
-        "options": {}
-      },
-      "id": "6a2a859e-8cf0-400a-8d05-0122b9d49fbf",
-      "name": "Merge1",
-      "type": "n8n-nodes-base.merge",
-      "position": [
-        1020,
-        1760
-      ],
-      "typeVersion": 3
-    },
-    {
-      "parameters": {},
-      "id": "7159467b-b2aa-4054-951c-62df49e4bbce",
-      "name": "Merge2",
-      "type": "n8n-nodes-base.merge",
-      "position": [
-        1320,
-        1280
-      ],
-      "typeVersion": 3
-    },
-    {
-      "parameters": {
-        "content": "## Perform Qdrant Vector Store Operations",
-        "height": 640,
-        "width": 920,
-        "color": 7
-      },
-      "id": "023d4967-f06b-47cf-a335-a1bbc6fc38a8",
-      "name": "Sticky Note1",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1740,
-        1820
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "content": "## 🌟Workflow Config\n\n- Google Drive Folder Id\n- Qdrant Collection Name\n- List of Google Drive File Id's",
-        "height": 840,
-        "width": 480
-      },
-      "id": "c24f4ace-8c7a-4cee-9f19-e41c9f4da55f",
-      "name": "Sticky Note2",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        460,
-        1040
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "content": "## Extract Metadata for Qdrant Hybrid Search",
-        "height": 420,
-        "width": 640,
-        "color": 6
-      },
-      "id": "e3031045-82d6-44dd-bd05-3bb6ac870711",
-      "name": "Sticky Note3",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        2100,
-        1140
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "content": "## Google Drive",
-        "height": 320,
-        "width": 300,
-        "color": 2
-      },
-      "id": "30ef6a2f-9987-4538-9269-3d3b96d46d4f",
-      "name": "Sticky Note4",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1760,
-        1140
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "content": "## ✨ Save Documents to Qdrant Vector Store",
-        "height": 1480,
-        "width": 1360,
-        "color": 5
-      },
-      "id": "2cebf918-fd21-4314-a2d4-0e6a29e2a3d3",
-      "name": "Sticky Note5",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1440,
-        1060
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "content": "## 👍Start Here!",
-        "height": 460,
-        "width": 340,
-        "color": 4
-      },
-      "id": "0de23f6e-afe9-4943-a973-c4546ca7f609",
-      "name": "Sticky Note8",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        80,
-        1040
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "path": "upsert",
-        "options": {}
-      },
-      "id": "34892b09-3ed8-4241-81e6-4bd81bbefe4c",
-      "name": "Webhook",
-      "type": "n8n-nodes-base.webhook",
-      "position": [
-        200,
-        1320
-      ],
-      "webhookId": "3a30557f-9264-4bc8-a253-a9356677c791",
-      "typeVersion": 2,
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "options": {
-          "systemMessage": "=You have access to a tool that retrieves documents from a vector store. Use it whenever a user asks something that might require specific factual information. When asked about specific details (e.g. the paper’s title), always look in the provided metadata context and return the exact text from the corresponding field.”"
-        }
-      },
-      "id": "bc326e56-2746-40e7-aa42-8246c0425b74",
-      "name": "AI Agent",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "position": [
-        760,
-        220
-      ],
-      "typeVersion": 1.7
-    },
-    {
-      "parameters": {
-        "contextWindowLength": 40
-      },
-      "id": "40c49e30-d4e2-4139-b56c-c3dac3a71bb7",
-      "name": "Window Buffer Memory",
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "position": [
-        780,
-        420
-      ],
-      "typeVersion": 1.3
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "dececa1f-465f-4021-a377-1aa6b4301c0e",
-      "name": "When chat message received",
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "position": [
-        200,
-        220
-      ],
-      "webhookId": "5f1c0c82-0ff9-40c7-9e2e-b1a96ffe24cd",
-      "typeVersion": 1.1
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-2.0-flash-exp",
-        "options": {
-          "maxOutputTokens": 8192
-        }
-      },
-      "id": "b43e35e9-0bbb-44ec-9402-37173daa15fc",
-      "name": "Google Gemini Chat Model1",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "position": [
-        600,
-        420
-      ],
-      "typeVersion": 1,
-      "credentials": {
-        "googlePalmApi": {
-          "id": "CT1IsCjWQvUZPRuh",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "text-embedding-3-large",
-        "options": {}
-      },
-      "id": "67f412c4-28da-4d34-8f0f-8b1d48ba3dad",
-      "name": "text-embeddings-3-large1",
-      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
-      "position": [
-        1040,
-        580
+        900,
+        2360
       ],
       "typeVersion": 1,
       "credentials": {
@@ -488,249 +341,6 @@
           "name": "OpenAi account"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "## 🤖Retrieve Content from Qdrant Vector Store",
-        "height": 680,
-        "width": 860,
-        "color": 5
-      },
-      "id": "fb462378-ec10-408b-bca7-e21f727dd010",
-      "name": "Sticky Note9",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        460,
-        120
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "content": "## 🗣️ Chat with Your Documents",
-        "height": 320,
-        "width": 340,
-        "color": 4
-      },
-      "id": "7c2fb290-6a7e-47a2-a34b-dd5ca2ae41cd",
-      "name": "Sticky Note10",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        80,
-        120
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "content": "# Step 1 - Save Documents to Qdrant Vector Store",
-        "height": 1880,
-        "width": 2880,
-        "color": 7
-      },
-      "id": "c439a835-2a06-4bac-b201-56e59768b811",
-      "name": "Sticky Note11",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        0,
-        940
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "content": "# Step 2 - Chat with Your Documents from Qdrant Vector Store",
-        "height": 880,
-        "width": 1780,
-        "color": 7
-      },
-      "id": "76e4521c-df1f-4289-ae40-e0ce2cce5969",
-      "name": "Sticky Note12",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        0,
-        0
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "operation": "createFromText",
-        "content": "={{ $json.output }}",
-        "name": "=Nostr Chatbot - Avatar - {{ $now }}",
-        "driveId": {
-          "__rl": true,
-          "mode": "list",
-          "value": "My Drive"
-        },
-        "folderId": {
-          "__rl": true,
-          "mode": "list",
-          "value": "root",
-          "cachedResultName": "/ (Root folder)"
-        },
-        "options": {}
-      },
-      "id": "ade89831-b987-495d-960c-410185b5bb63",
-      "name": "Google Drive",
-      "type": "n8n-nodes-base.googleDrive",
-      "position": [
-        1480,
-        640
-      ],
-      "typeVersion": 3,
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "cd8f88e1-19c0-4b9e-914d-e2e7ba21d9fa",
-              "name": "output",
-              "type": "string",
-              "value": "={{ $json.output }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "93d10be0-c73a-4182-afb7-7531d2f1439f",
-      "name": "Respond to User",
-      "type": "n8n-nodes-base.set",
-      "position": [
-        1480,
-        460
-      ],
-      "typeVersion": 3.4
-    },
-    {
-      "parameters": {
-        "content": "## Save Chat History",
-        "height": 300,
-        "width": 340,
-        "color": 4
-      },
-      "id": "bc77212d-afd8-433b-9977-5e2a259c66c7",
-      "name": "Sticky Note13",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1360,
-        120
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "operation": "update",
-        "documentURL": "1Bbl800TwH8sJfnq4n59aeC2c-mz3rW6-kQxG1EG5a2E",
-        "actionsUi": {
-          "actionFields": [
-            {
-              "action": "insert",
-              "text": "={{ $json.output }}"
-            }
-          ]
-        }
-      },
-      "id": "37a7d426-8f3a-4d16-a241-17562e70b208",
-      "name": "Update Chat History",
-      "type": "n8n-nodes-base.googleDocs",
-      "position": [
-        1480,
-        220
-      ],
-      "typeVersion": 2,
-      "credentials": {
-        "googleDocsOAuth2Api": {
-          "id": "AZP8S68mJCCscdhI",
-          "name": "Google Docs account"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "mode": "retrieve-as-tool",
-        "toolName": "DocumentRetriever",
-        "toolDescription": "\"This tool queries the Qdrant vector database to retrieve up to 10 documents most relevant to the user’s query. Each retrieved document includes metadata such as title, authors, date, abstract, and other fields. Use these results to provide answers. If the user’s question cannot be answered from these documents, let the user know.",
-        "qdrantCollection": {
-          "__rl": true,
-          "value": "repository",
-          "mode": "list",
-          "cachedResultName": "repository"
-        },
-        "topK": 10,
-        "options": {}
-      },
-      "id": "788568d4-458a-4398-aa6e-1f0e7cf2f9e9",
-      "name": "Qdrant Vector Store Tool",
-      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
-      "position": [
-        1000,
-        420
-      ],
-      "typeVersion": 1,
-      "credentials": {
-        "qdrantApi": {
-          "id": "CKztbfiV5kvGCHik",
-          "name": "QdrantApi account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": {
-          "__rl": true,
-          "mode": "list",
-          "value": "gpt-4o-mini"
-        },
-        "options": {}
-      },
-      "id": "ce672abd-ba7e-46e0-8555-55197e467d27",
-      "name": "OpenAI Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "position": [
-        600,
-        600
-      ],
-      "typeVersion": 1.2,
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "content": "# 🤖 AI-Powered RAG Chatbot with Google Drive Integration\n\nThis workflow creates a powerful RAG (Retrieval-Augmented Generation) chatbot that can process, store, and interact with documents from Google Drive using Qdrant vector storage and Google's Gemini AI.\n\n## How It Works\n\n### Document Processing & Storage 📚\n- Retrieves documents from a specified Google Drive folder\n- Processes and splits documents into manageable chunks\n- Extracts metadata using AI for enhanced search capabilities\n- Stores document vectors in Qdrant for efficient retrieval\n\n### Intelligent Chat Interface 💬\n- Provides a conversational interface powered by Google Gemini\n- Uses RAG to retrieve relevant context from stored documents\n- Maintains chat history in Google Docs for reference\n- Delivers accurate, context-aware responses\n\n### Vector Store Management 🗄️\n- Features secure delete operations with human verification\n- Includes Telegram notifications for important operations\n- Maintains data integrity with proper version control\n- Supports batch processing of documents\n\n## Setup Steps\n\n1. Configure API Credentials:\n   - Set up Google Drive & Docs access\n   - Configure Gemini AI API\n   - Set up Qdrant vector store connection\n   - Add Telegram bot for notifications\n\n2. Configure Document Sources:\n   - Set Google Drive folder ID\n   - Define Qdrant collection name\n   - Set up document processing parameters\n\n3. Test and Deploy:\n   - Verify document processing\n   - Test chat functionality\n   - Confirm vector store operations\n   - Check notification system\n\n\nThis workflow is ideal for organizations needing to create intelligent chatbots that can access and understand large document repositories while maintaining context and providing accurate responses through RAG technology.\n",
-        "height": 1240,
-        "width": 700
-      },
-      "id": "7de44fb8-3b4b-453e-9754-4a225768d181",
-      "name": "Sticky Note14",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -760,
-        940
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "modelName": "models/embedding-001"
-      },
-      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        1580,
-        2160
-      ],
-      "id": "686c2d44-1d59-456d-a726-72548dca38d7",
-      "name": "Embeddings Google Gemini",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "CT1IsCjWQvUZPRuh",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      },
-      "disabled": true
     },
     {
       "parameters": {
@@ -761,57 +371,303 @@
           ]
         }
       },
-      "id": "a8100bdb-9225-4d8f-9286-0fe6b29ae38c",
+      "id": "02d4fef9-ad68-4b53-b733-d5bd26e5cb4d",
       "name": "Delete Qdrant Points by File ID",
       "type": "@n8n/n8n-nodes-langchain.code",
       "position": [
-        860,
-        2220
+        780,
+        2200
       ],
       "typeVersion": 1
     },
     {
       "parameters": {
-        "content": "## Delete From Qdrant Vector Store\nThis operation can not be undone!!!",
-        "height": 460,
-        "width": 420,
-        "color": 5
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11fa71e9-6cbc-4183-9439-e3379b2b970e",
+              "name": "repository",
+              "type": "string",
+              "value": "nostr-damus-user-profiles"
+            }
+          ]
+        },
+        "options": {}
       },
-      "id": "1220e6ba-6c4a-406d-a3d4-20b259311c9c",
-      "name": "Sticky Note6",
-      "type": "n8n-nodes-base.stickyNote",
+      "id": "ca1d63d2-1272-4758-bd72-5bc3deacbe28",
+      "name": "Qdrant Collection Name",
+      "type": "n8n-nodes-base.set",
       "position": [
-        780,
-        2100
+        660,
+        1520
       ],
-      "typeVersion": 1
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "append",
+              "field": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2e8aaef-bd3b-4074-a53d-0c5282a3b281",
+      "name": "File Id List",
+      "type": "n8n-nodes-base.summarize",
+      "position": [
+        660,
+        1700
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "e4c33487-e0e4-49ea-8167-be2b81ecccc7",
+      "name": "Merge1",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1020,
+        1760
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {},
+      "id": "7d228d1b-0c69-46d6-a445-4403f727ea36",
+      "name": "Merge2",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1280,
+        1280
+      ],
+      "typeVersion": 3
     },
     {
       "parameters": {
         "content": "## Prepare Qdrant Vector Store",
         "height": 760,
-        "width": 500,
+        "width": 1180,
         "color": 3
       },
-      "id": "ccf44194-564c-4b84-97fa-8ddadac442ea",
+      "id": "59c2d07c-91e3-4acb-9f6e-7891b9653c9f",
       "name": "Sticky Note",
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        740,
+        80,
         1980
       ],
       "typeVersion": 1
     },
     {
       "parameters": {
+        "content": "## Perform Qdrant Vector Store Operations",
+        "height": 640,
+        "width": 920,
+        "color": 7
+      },
+      "id": "dd7d21e0-220d-4654-a22c-462f8fda9d8d",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1680,
+        1840
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 🌟Workflow Config\n\n- Google Drive Folder Id\n- Qdrant Collection Name\n- List of Google Drive File Id's",
+        "height": 840,
+        "width": 480
+      },
+      "id": "2af659e2-96c3-4594-9634-be629215398a",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        460,
+        1040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Extract Metadata for Qdrant Hybrid Search",
+        "height": 420,
+        "width": 640,
+        "color": 6
+      },
+      "id": "8d7fc3af-b258-48b4-9938-2796359154f3",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2100,
+        1140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Google Drive",
+        "height": 320,
+        "width": 300,
+        "color": 2
+      },
+      "id": "d267886e-5a85-41c8-b5cd-aa9241ed04f0",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1760,
+        1140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## ✨ Save Documents to Qdrant Vector Store",
+        "height": 1480,
+        "width": 1360,
+        "color": 5
+      },
+      "id": "9f99d4df-bec1-4b0c-9519-99b9244b1d7e",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1440,
+        1060
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Delete From Qdrant Vector Store\nThis operation can not be undone!!!",
+        "height": 560,
+        "width": 980,
+        "color": 5
+      },
+      "id": "12d2c17c-251e-4292-9033-672daf948104",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        200,
+        2080
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 👍Start Here!",
+        "height": 460,
+        "width": 340,
+        "color": 4
+      },
+      "id": "6f920891-e480-4414-b1e2-548fed79694f",
+      "name": "Sticky Note8",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        1040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "path": "upsert",
         "options": {}
       },
-      "id": "96ac5d49-28e7-4bcb-8273-4fc9ef87b5af",
-      "name": "gpt-4o-mini1",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "id": "c32cb680-c7d9-4d16-9eac-09116e0bd46e",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
       "position": [
-        960,
-        2400
+        200,
+        1320
+      ],
+      "webhookId": "3a30557f-9264-4bc8-a253-a9356677c791",
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "Make sure that the answers are coming only from the data in the prompt. Make sure that your answers are articles from papers from https://dr.lib.iastate.edu.\n\nYou are an intelligent research assistant specialized in academic theses and dissertations. You have access to a semantic vector database called \"repository\" that contains metadata from research documents. Your role is to help users explore and understand the contents of this repository.\n\nWhen a user asks a question, search the repository for the most relevant documents using their semantic content, not just keyword matches. Use the document's abstract and title to understand its subject matter. You may also use other metadata such as authors, academic unit, type, date, DOI, or keywords to support your response.\n\nProvide clear, factual, and helpful answers based on the retrieved documents. If appropriate, summarize relevant abstracts, explain the significance of a work, or suggest related topics. Prioritize precision and usefulness. If a user’s query cannot be answered with the available data, politely let them know.\n\nAlways return your response in natural, helpful language, followed by a list of the most relevant documents in a concise format like:\n\n- **Title**: [title]\n  - **Authors**: [authors]\n  - **Date**: [date]\n  - **Link**: [permanent link to https://dr.lib.iastate.edu]\n\nOnly include documents that are highly relevant to the user’s question. Do not fabricate information or cite sources not present in the repository.\n"
+        }
+      },
+      "id": "27f6da62-bce8-43e0-972b-5668fe6018ff",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        760,
+        220
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 40
+      },
+      "id": "207ed2b8-1e3a-4f54-bf97-c49231b187aa",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        780,
+        420
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "429bfc5b-cd97-439f-828e-8e2916921c12",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        200,
+        220
+      ],
+      "webhookId": "5f1c0c82-0ff9-40c7-9e2e-b1a96ffe24cd",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-exp-03-25",
+        "options": {}
+      },
+      "id": "627975f8-3c49-41be-b0c4-7a5b022990d5",
+      "name": "Google Gemini Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        600,
+        420
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CT1IsCjWQvUZPRuh",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {}
+      },
+      "id": "a7d7ed0b-a107-4ca6-abf9-741277575f0f",
+      "name": "text-embeddings-3-large1",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        1040,
+        580
       ],
       "typeVersion": 1,
       "credentials": {
@@ -823,16 +679,245 @@
     },
     {
       "parameters": {
-        "jsCode": "// 'items' is the n8n array of input objects (each is a metadata entry)\nconst points = items.map((item, index) => {\n  const data = item.json;\n  // Create a unique id using the Filename (or any other field) and an index.\n  // You can modify this to use DOI or another identifier if preferred.\n  const uniqueId = `${data.Filename.replace(/\\s+/g, '_')}_${index}`;\n  \n  // Note: The vector field is left empty (an empty array) here as a placeholder.\n  // You would normally run the embedding generation (e.g., using an API) to fill this field.\n  return {\n    id: uniqueId,\n    vector: [],  // placeholder; should be replaced with the embedding vector later\n    payload: {\n      title: data.Title,\n      filename: data.Filename,\n      date: data.Date,\n      authors: data.Authors,\n      advisor: data.Advisor,\n      abstract: data.Abstract,\n      academicUnit: data[\"Academic Unit\"],\n      type: data.Type,\n      subjectCategories: data[\"Subject Categories\"],\n      keywords: data.Keywords,\n      doi: data.DOI,\n      permanentLink: data[\"Permanent Link\"],\n      collections: data.Collections\n    }\n  };\n});\n\nreturn [{\n  json: { points }\n}];\n"
+        "content": "## 🤖Retrieve Content from Qdrant Vector Store",
+        "height": 680,
+        "width": 860,
+        "color": 5
       },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "id": "121314d3-c30f-4780-ad8d-10ab813a41e0",
+      "name": "Sticky Note9",
+      "type": "n8n-nodes-base.stickyNote",
       "position": [
-        2500,
+        460,
+        120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 🗣️ Chat with Your Documents",
+        "height": 320,
+        "width": 340,
+        "color": 4
+      },
+      "id": "7e2571e0-bf7c-454e-ac77-5ecc6c38c781",
+      "name": "Sticky Note10",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Step 1 - Save Documents to Qdrant Vector Store",
+        "height": 1880,
+        "width": 2880,
+        "color": 7
+      },
+      "id": "d54de053-733b-4110-b45d-3b020a8ee84c",
+      "name": "Sticky Note11",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        940
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Step 2 - Chat with Your Documents from Qdrant Vector Store",
+        "height": 880,
+        "width": 1780,
+        "color": 7
+      },
+      "id": "11cf7729-853a-4e25-95eb-c84dd0d7a6ee",
+      "name": "Sticky Note12",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "={{ $json.output }}",
+        "name": "=Nostr Chatbot - Avatar - {{ $now }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "7d902f19-f7a9-4bbe-b453-a7aeedd83b7c",
+      "name": "Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1480,
+        640
+      ],
+      "typeVersion": 3,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cd8f88e1-19c0-4b9e-914d-e2e7ba21d9fa",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "324f3246-c588-4f7b-9f9e-89ef4ff4858f",
+      "name": "Respond to User",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1480,
+        460
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "## Save Chat History",
+        "height": 300,
+        "width": 340,
+        "color": 4
+      },
+      "id": "5b8e8f23-3ab9-4175-9b46-97343284ecb5",
+      "name": "Sticky Note13",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1360,
+        120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "1ej_qLolUFp1h4eZkrb99T3DWQ3JOwXVEMS3VUjWyVf0",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "=\n-------------------------------\n\n{{ $now }}\n\n{{ $('When chat message received').item.json.chatInput  }}\n\n{{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "id": "b6c82880-9ab0-4755-952d-8e6aa6c789cb",
+      "name": "Update Chat History",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        1480,
+        220
+      ],
+      "typeVersion": 2,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "AZP8S68mJCCscdhI",
+          "name": "Google Docs account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "repository",
+        "toolDescription": "\"This tool queries the Qdrant vector database to retrieve up to 10 documents most relevant to the user’s query. Each retrieved document includes metadata such as title, authors, date, abstract, and other fields. Use these results to provide answers. If the user’s question cannot be answered from these documents, let the user know.",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "repository",
+          "mode": "list",
+          "cachedResultName": "repository"
+        },
+        "topK": 20,
+        "options": {}
+      },
+      "id": "a4d30fb0-743b-4010-adc5-e9753a6f1b59",
+      "name": "Qdrant Vector Store Tool",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "position": [
+        940,
+        420
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "qdrantApi": {
+          "id": "CKztbfiV5kvGCHik",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "e763fbb1-7ac4-47b2-9c30-c0bd1f01cf16",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        600,
+        600
+      ],
+      "typeVersion": 1.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "Qdrant vector store upsert completed",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d03308f6-2807-42dd-a22d-58e4c92a0bd8",
+      "name": "Send Completed Message",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1860,
         1620
       ],
-      "id": "227c642a-36dc-405f-9329-ec76ec97d778",
-      "name": "Code"
+      "webhookId": "382a3b43-b83f-47b1-a276-67c6b98a441a",
+      "typeVersion": 1.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "# 🤖 AI-Powered RAG Chatbot with Google Drive Integration\n\nThis workflow creates a powerful RAG (Retrieval-Augmented Generation) chatbot that can process, store, and interact with documents from Google Drive using Qdrant vector storage and Google's Gemini AI.\n\n## How It Works\n\n### Document Processing & Storage 📚\n- Retrieves documents from a specified Google Drive folder\n- Processes and splits documents into manageable chunks\n- Extracts metadata using AI for enhanced search capabilities\n- Stores document vectors in Qdrant for efficient retrieval\n\n### Intelligent Chat Interface 💬\n- Provides a conversational interface powered by Google Gemini\n- Uses RAG to retrieve relevant context from stored documents\n- Maintains chat history in Google Docs for reference\n- Delivers accurate, context-aware responses\n\n### Vector Store Management 🗄️\n- Features secure delete operations with human verification\n- Includes Telegram notifications for important operations\n- Maintains data integrity with proper version control\n- Supports batch processing of documents\n\n## Setup Steps\n\n1. Configure API Credentials:\n   - Set up Google Drive & Docs access\n   - Configure Gemini AI API\n   - Set up Qdrant vector store connection\n   - Add Telegram bot for notifications\n\n2. Configure Document Sources:\n   - Set Google Drive folder ID\n   - Define Qdrant collection name\n   - Set up document processing parameters\n\n3. Test and Deploy:\n   - Verify document processing\n   - Test chat functionality\n   - Confirm vector store operations\n   - Check notification system\n\n\nThis workflow is ideal for organizations needing to create intelligent chatbots that can access and understand large document repositories while maintaining context and providing accurate responses through RAG technology.\n",
+        "height": 1240,
+        "width": 700
+      },
+      "id": "3dc412ec-2ff6-48a8-8aeb-172871cf0a77",
+      "name": "Sticky Note14",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -760,
+        940
+      ],
+      "typeVersion": 1
     }
   ],
   "connections": {
@@ -871,7 +956,13 @@
     },
     "Loop Over Items": {
       "main": [
-        [],
+        [
+          {
+            "node": "Send Completed Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Download File From Google Drive",
@@ -903,11 +994,33 @@
         ]
       ]
     },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Meta Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Merge": {
       "main": [
         [
           {
-            "node": "Code",
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Meta Data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
             "type": "main",
             "index": 0
           }
@@ -918,7 +1031,7 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Extract Meta Data",
             "type": "main",
             "index": 0
           }
@@ -980,6 +1093,28 @@
             "node": "Find File Ids in Google Drive Folder",
             "type": "main",
             "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt-4o-mini1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Delete Qdrant Points by File ID",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Qdrant Points by File ID": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
           }
         ]
       ]
@@ -1105,44 +1240,6 @@
           {
             "node": "AI Agent",
             "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Embeddings Google Gemini": {
-      "ai_embedding": [
-        []
-      ]
-    },
-    "Delete Qdrant Points by File ID": {
-      "main": [
-        [
-          {
-            "node": "Merge2",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "gpt-4o-mini1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Delete Qdrant Points by File ID",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code": {
-      "main": [
-        [
-          {
-            "node": "Qdrant Vector Store",
-            "type": "main",
             "index": 0
           }
         ]
