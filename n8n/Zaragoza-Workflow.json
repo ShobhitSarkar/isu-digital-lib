@@ -715,7 +715,7 @@
         "promptType": "define",
         "text": "={{ $json.chatInput }}",
         "options": {
-          "systemMessage": "=Answer the question the user asks"
+          "systemMessage": "=You are an intelligent AI agent that has access to mulitple theses as well as research documents from Iowa State University's Computer Science department. You have access to a qdrant database as your tools called senior-design-documents that houses all the meta data for these documents. Answer the users question using the meta data, providing sources whenever possible."
         }
       },
       "id": "897d29af-719d-4fe7-93a9-44c693cc6547",
@@ -756,7 +756,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-2.0-flash-exp",
+        "modelName": "models/gemini-2.0-flash",
         "options": {
           "maxOutputTokens": 8192
         }
@@ -1426,7 +1426,7 @@
   },
   "active": false,
   "settings": {},
-  "versionId": "42e21bf5-9754-45fe-97c3-6382c61be2ec",
+  "versionId": "d4c6a3ca-afc7-4181-aaa6-218a84047caf",
   "meta": {
     "templateId": "2982",
     "instanceId": "ad09f93fbc3668d1eb28b0b8b45e01cc1d2617dbbccacfc9c496fcab9fdbd382"
