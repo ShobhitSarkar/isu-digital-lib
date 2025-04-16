@@ -1,9 +1,29 @@
 import OpenAI from "openai";
 
+/**
+ * OpenAI client instance to connect to the OpenAI API.
+ */
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+/**
+ * Generates answers to the given question using provided context through 
+ * OpenAI's chat completion function 
+ * @param {Object} params - The parameters for the chat function
+ * @param {string} params.question - The user's question to be answered
+ * @param {string} params.context - The context information to help answer the question
+ * 
+ * @returns {Promise<string>} The generated answer from the OpenAI chat model
+ * 
+ * @example
+ * const answer = await chat({
+ *   question: "What are the main findings?",
+ *   context: "The study found that..."
+ * });
+ * 
+ * 
+ */
 export async function chat({
   question,
   context,

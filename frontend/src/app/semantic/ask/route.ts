@@ -64,15 +64,15 @@ export async function POST(request: NextRequest) {
     // 3. Prepare context from the search results
     const context = searchResults.map((result, index) => {
       return `Document ${index + 1}:
-Title: ${result.payload.title}
-Authors: ${result.payload.authors ? result.payload.authors.join(', ') : 'Unknown'}
-Year: ${result.payload.year || 'n.d.'}
-Abstract: ${result.payload.abstract}`;
-    }).join('\n\n');
+      Title: ${result.payload.title}
+      Authors: ${result.payload.authors ? result.payload.authors.join(', ') : 'Unknown'}
+      Year: ${result.payload.year || 'n.d.'}
+      Abstract: ${result.payload.abstract}`;
+          }).join('\n\n');
 
     // 4. Generate answer using GPT model
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // You can use gpt-4 for better results
+      model: "gpt-3.5-turbo", 
       messages: [
         {
           role: "system",
@@ -88,7 +88,7 @@ ${context}
 Based on these papers, please answer the following question: ${query}`
         }
       ],
-      temperature: 0.3, // Lower temperature for more focused answers
+      temperature: 0.3,
     });
 
     const answer = completion.choices[0].message.content;
