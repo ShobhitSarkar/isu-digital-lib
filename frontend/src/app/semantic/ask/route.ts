@@ -3,10 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { OpenAI } from 'openai';
 
-// Collection settings
+/**
+ * Name of the Qdrant collection containing the paper embeddings 
+ */
 const COLLECTION_NAME = 'academic-papers';
 
-// Initialize OpenAI with explicit configuration
+/**
+ * OpenAI client instance to connect to the OpenAI API.
+ */
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   defaultHeaders: {
@@ -14,6 +18,41 @@ const openai = new OpenAI({
   }
 });
 
+/**
+ * API endpoint handler for semantic search and question answering
+ * Uses embeddings and GPT to find and analyze relevant academic papers
+ * 
+ * @param request - Next.js API request containing the query
+ * @param {string} request.body.query - The user's question to be answered
+ * 
+ * @returns {Promise<NextResponse>} JSON response with either:
+ *   Success: { 
+ *     answer: string,      // Generated answer from GPT
+ *     citations: Array<{   // Metadata for relevant papers
+ *       id: string,
+ *       score: number,
+ *       title: string,
+ *       authors: string[],
+ *       abstract: string,
+ *       department: string,
+ *       year: string,
+ *       documentType: string,
+ *       uri: string,
+ *       citation: string
+ *     }>
+ *   }
+ *   Error: { error: string, message?: string }
+ * 
+ * @throws {400} If query parameter is missing or invalid
+ * @throws {500} If OpenAI API key is not configured or processing fails
+ * 
+ * @example
+ * POST /api/semantic/ask
+ * {
+ *   "query": "What are the main findings about software testing?"
+ * }
+ * 
+ */
 export async function POST(request: NextRequest) {
   try {
     const { query } = await request.json();

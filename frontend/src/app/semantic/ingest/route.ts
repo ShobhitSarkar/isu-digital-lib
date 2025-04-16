@@ -6,23 +6,38 @@ import { QdrantClient } from '@qdrant/js-client-rest';
 import fs from 'fs';
 import path from 'path';
 
-// Initialize OpenAI
+/**
+ * OpenAI client configuration instance for generating embeddings 
+ */
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Initialize Qdrant
+/**
+ * Qdrant client configuration for generating embeddings 
+ */
 const qdrant = new QdrantClient({
   url: process.env.QDRANT_URL,
   apiKey: process.env.QDRANT_API_KEY,
   port: null,
 });
 
-// Collection settings
-const COLLECTION_NAME = 'academic-papers';
-const VECTOR_SIZE = 1536; // For OpenAI ada-002 embeddings
+const COLLECTION_NAME = 'academic-papers'; // name of the Qdranr collection
+const VECTOR_SIZE = 1536; // Size of the embeddings from OpenAI's ada-002 model
 
-// Field definitions from your CSV
+/**
+ * 
+ * Type definition for academic paper metadata (based on the CSV given by Dr Sukul)
+ * @typedef {Object} PaperMetadata
+ * @property {string} id - Unique identifier for the paper
+ * @property {string} title - Title of the paper
+ * @property {string[]} authors - List of paper authors
+ * @property {string} abstract - Paper abstract
+ * @property {string} department - Academic department
+ * @property {string} year - Publication year
+ * @property {string} documentType - Type of document (thesis/dissertation)
+ * @property {string} uri - URI to access the paper
+ */
 type PaperMetadata = {
   id: string;
   title: string;
@@ -35,6 +50,32 @@ type PaperMetadata = {
   // Add other relevant fields
 };
 
+/**
+ * Handles POST requests to ingest academic papers into the vector database
+ * 
+ * Process:
+ * 1. Creates/verifies Qdrant collection
+ * 2. Accepts CSV file upload or uses local data
+ * 3. Parses CSV data into paper metadata
+ * 4. Generates embeddings for each paper using OpenAI
+ * 5. Uploads vectors and metadata to Qdrant in batches
+ * 
+ * @param request - Next.js API request containing CSV file or using local data
+ * @returns {Promise<NextResponse>} JSON response with either:
+ *   Success: { success: true, message: string, papers: number }
+ *   Error: { success: false, error: string }
+ * 
+ * @throws {500} If processing fails
+ * 
+ * @example
+ * // Upload CSV file
+ * const formData = new FormData();
+ * formData.append('file', csvFile);
+ * await fetch('/api/ingest', {
+ *   method: 'POST',
+ *   body: formData
+ * });
+ */
 export async function POST(request: NextRequest) {
   try {
     // 1. Create collection if it doesn't exist
