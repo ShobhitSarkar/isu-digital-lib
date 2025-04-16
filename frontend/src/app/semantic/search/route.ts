@@ -3,14 +3,52 @@ import { NextRequest, NextResponse } from 'next/server';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { OpenAI } from 'openai';
 
-// Collection settings
+// name of the Qdrant collection containing the paper embeddings
 const COLLECTION_NAME = 'academic-papers';
 
-// Initialize OpenAI
+/**
+ * OpenAI client instance to connect to the OpenAI API.
+ */
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+/**
+ * Semantic search endpoint for academic papers
+ * Converts search query to embedding and finds similar papers in vector database
+ * 
+ * @param request - Next.js API request
+ *   @param {string} request.body.query - The search query to find relevant papers
+ * 
+ * @returns {Promise<NextResponse>} JSON response with either:
+ *   Success: {
+ *     results: Array<{
+ *       id: string,          // Unique identifier
+ *       score: number,       // Similarity score
+ *       title: string,       // Paper title
+ *       authors: string[],   // List of authors
+ *       abstract: string,    // Paper abstract
+ *       department: string,  // Academic department
+ *       year: string,       // Publication year
+ *       documentType: string,// Type of document
+ *       uri: string,        // Access URI
+ *       citation: string    // APA format citation
+ *     }>
+ *   }
+ *   Error: { 
+ *     error: string, 
+ *     message?: string 
+ *   }
+ * 
+ * @throws {400} If query parameter is missing or invalid
+ * @throws {500} If search operation fails
+ * 
+ * @example
+ * POST /api/semantic/search
+ * {
+ *   "query": "machine learning applications in software engineering"
+ * }
+ */
 export async function POST(request: NextRequest) {
   try {
     const { query } = await request.json();
