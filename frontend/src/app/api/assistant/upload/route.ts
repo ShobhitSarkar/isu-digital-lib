@@ -1,4 +1,4 @@
-// src/assistant/upload/route.ts
+// frontend/src/app/api/assistant/upload/route.ts
 
 import fs from "fs";
 import pdfParse from "pdf-parse";
@@ -162,7 +162,7 @@ function chunkText(text: string, size = 500, overlap = 100): string[] {
 
 /**
  * Generates vector embeddings for a given text using OpenAI's embedding model
- * Uses the text-embedding-ada-002 model to create a vector representation of the text
+ * Uses the text-embedding-3-small model to create a vector representation of the text
  * 
  * @param text - The text to be embedded
  * @returns A promise that resolves to an array of numbers representing the embedding
@@ -171,7 +171,7 @@ function chunkText(text: string, size = 500, overlap = 100): string[] {
  */
 async function getEmbedding(text: string): Promise<number[]> {
   const res = await openai.embeddings.create({
-    model: "text-embedding-ada-002",
+    model: "text-embedding-3-small",
     input: text,
   });
   return res.data[0].embedding;

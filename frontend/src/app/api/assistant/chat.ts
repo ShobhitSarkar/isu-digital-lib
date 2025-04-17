@@ -1,4 +1,4 @@
-// src/assistant/chat.ts
+// frontend/src/app/api/assistant/chat.ts
 
 import OpenAI from "openai";
 

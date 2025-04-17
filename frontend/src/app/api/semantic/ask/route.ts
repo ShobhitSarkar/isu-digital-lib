@@ -1,4 +1,5 @@
-// src/app/api/semantic/ask/route.ts
+// frontend/src/app/api/semantic/ask/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { OpenAI } from 'openai';
@@ -6,7 +7,7 @@ import { OpenAI } from 'openai';
 /**
  * Name of the Qdrant collection containing the paper embeddings 
  */
-const COLLECTION_NAME = 'academic-papers';
+const COLLECTION_NAME = 'isu-semantic-search';
 
 /**
  * OpenAI client instance to connect to the OpenAI API.
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
 
       // 4. Generate answer using GPT model
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o", 
+        model: "gpt-3.5-turbo", 
         messages: [
           {
             role: "system",

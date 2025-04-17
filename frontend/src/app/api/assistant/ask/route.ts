@@ -1,4 +1,4 @@
-// src/assistant/ask/route.ts
+// frontend/src/app/api/assistant/ask/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { QdrantClient } from "@qdrant/js-client-rest";
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Embed the user's question
     const embeddingResponse = await openai.embeddings.create({
-      model: "text-embedding-ada-002",
+      model: "text-embedding-3-small",
       input: question,
     });
 
