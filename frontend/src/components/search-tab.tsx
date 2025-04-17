@@ -16,7 +16,7 @@ export default function SearchTab() {
     try {
       setLoading(true);
       
-      const response = await fetch("/semantic/ask", {
+      const response = await fetch("/api/semantic/ask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,22 +1,14 @@
-// frontend/pages/api/upload.ts
+// src/assistant/upload/route.ts
 
 import fs from "fs";
 import pdfParse from "pdf-parse";
 import OpenAI from "openai";
 import { QdrantClient } from "@qdrant/js-client-rest";
-import { IncomingForm } from "formidable";
-import type { NextApiRequest, NextApiResponse } from "next";
 import { randomUUID } from "crypto";
-
-/**
- * Create a config instance to disable Next.js's body parsing due to 
- * file handling 
- */
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+import { NextRequest, NextResponse } from "next/server";
+import path from "path";
+import { writeFile } from "fs/promises";
+import os from "os";
 
 /**
  * Instantiate a openai client to connect to the OpenAI API.
@@ -41,36 +33,24 @@ const VECTOR_SIZE = 1536; // size of the vector embeddings from OpenAI's model
  * Handles PDF document uploads, processes them for vector search, and stores in Qdrant.
  * 
  * @param req - Next.js API request object containing the uploaded PDF file
- * @param res - Next.js API response object
  * 
- * @returns Promise<void> JSON response with either:
+ * @returns Promise<NextResponse> JSON response with either:
  *   Success: Array of uploaded file metadata
  *   Error: { error: string }
  * 
- * @throws {405} If request method is not POST
  * @throws {400} If no valid file is uploaded
  * @throws {500} If processing or upload fails
  */
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST allowed" });
-  }
-
-  const form = new IncomingForm({ multiples: true });
-
+export async function POST(request: NextRequest) {
   try {
-    const { files } = await new Promise<any>((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
-        else resolve({ fields, files });
-      });
-    });
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
 
-    const uploaded = Array.isArray(files.files) ? files.files : [files.files];
-    const file = uploaded[0];
-
-    if (!file || !file.filepath) {
-      return res.status(400).json({ error: "No valid file uploaded." });
+    if (!file || !file.name) {
+      return NextResponse.json(
+        { error: "No valid file uploaded." },
+        { status: 400 }
+      );
     }
 
     // Check if collection exists
@@ -94,7 +74,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const buffer = fs.readFileSync(file.filepath);
+    // Create a temporary file
+    const tempDir = os.tmpdir();
+    const tempFilePath = path.join(tempDir, file.name);
+    
+    // Convert File object to Buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    
+    // Write to temporary file
+    await writeFile(tempFilePath, buffer);
+
+    // Parse PDF
     const parsed = await pdfParse(buffer);
     const chunks = chunkText(parsed.text);
 
@@ -110,7 +101,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           id: randomUUID(),
           vector,
           payload: {
-            paperName: file.originalFilename,
+            paperName: file.name,
             content: chunk.slice(0, 1000),
             uploadedAt: new Date().toISOString(),
           },
@@ -119,35 +110,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     try {
-        await qdrant.upsert(COLLECTION, { points, wait: true });
-      } catch (err: any) {
-        console.error("Qdrant Error Response:", JSON.stringify(err?.response?.data || err, null, 2));
-        throw err;
-      }
-      
-    await qdrant.upsert(COLLECTION, {
-      points,
-      wait: true,
-    });
-
+      await qdrant.upsert(COLLECTION, { points, wait: true });
+    } catch (err: any) {
+      console.error("Qdrant Error Response:", JSON.stringify(err?.response?.data || err, null, 2));
+      throw err;
+    }
+    
     // Optionally re-enable indexing after upload
     await qdrant.updateCollection(COLLECTION, {
       hnsw_config: { m: 16 },
       optimizers_config: { indexing_threshold: 20000 },
     });
 
+    // Clean up temp file
+    fs.unlinkSync(tempFilePath);
+
     const uploadedPaperMeta = [{
-      id: file.newFilename || randomUUID(),
-      name: file.originalFilename,
+      id: randomUUID(),
+      name: file.name,
       size: file.size,
-      type: file.mimetype,
+      type: file.type,
       uploadedAt: new Date().toISOString(),
     }];
 
-    res.status(200).json(uploadedPaperMeta);
+    return NextResponse.json(uploadedPaperMeta);
   } catch (err: any) {
     console.error("Upload error:", err);
-    res.status(500).json({ error: err.message || "Upload failed." });
+    return NextResponse.json({ error: err.message || "Upload failed." }, { status: 500 });
   }
 }
 
@@ -161,10 +150,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
  * 
  * @returns An array of text chunks, where each chunk contains up to `size` words
  *          and overlaps with adjacent chunks by `overlap` words
- * 
- * @example
- * const text = "This is a long document that needs to be split into chunks..."
- * const chunks = chunkText(text, 500, 100);
  */
 function chunkText(text: string, size = 500, overlap = 100): string[] {
   const words = text.split(/\s+/);
@@ -183,12 +168,6 @@ function chunkText(text: string, size = 500, overlap = 100): string[] {
  * @returns A promise that resolves to an array of numbers representing the embedding
  * 
  * @throws error if the OpenAI API call fails
- * 
- * @example
- * const text = "This is a sample text";
- * const embedding = await getEmbedding(text);
- * // embedding is a number[] of length 1536
- * 
  */
 async function getEmbedding(text: string): Promise<number[]> {
   const res = await openai.embeddings.create({

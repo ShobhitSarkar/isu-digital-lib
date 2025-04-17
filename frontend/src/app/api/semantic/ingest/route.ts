@@ -1,4 +1,5 @@
-// src/app/api/ingest/route.ts
+// src/semantic/ingest/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { parse } from 'papaparse';
 import OpenAI from 'openai';
@@ -10,7 +11,7 @@ import path from 'path';
  * OpenAI client configuration instance for generating embeddings 
  */
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.MY_OPENAI_API_KEY,
 });
 
 /**
