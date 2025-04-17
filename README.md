@@ -59,7 +59,7 @@ Create a `.env` file with the following format:
 
 ```
 # Backend
-OPENAI_API_KEY=your_openai_key
+MY_OPENAI_API_KEY=your_openai_key
 QDRANT_URL=your_qdrant_url
 QDRANT_API_KEY=your_qdrant_key
 
