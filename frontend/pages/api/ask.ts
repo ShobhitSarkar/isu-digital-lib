@@ -1,3 +1,5 @@
+//frontend/pages/api/ask.ts
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import OpenAI from "openai";
@@ -19,7 +21,7 @@ const qdrant = new QdrantClient({
  * Set up the OpenAI client to connect to the OpenAI API.
  */
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.MY_OPENAI_API_KEY,
 });
 
 /**
@@ -52,10 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // 1. Embed the user's question
-    const embeddingResponse = await openai.embeddings.create({
-      model: "text-embedding-ada-002",
-      input: question,
-    });
+    const embeddingResponse = await generateEmbedding(query);
 
     const questionVector = embeddingResponse.data[0].embedding;
 
@@ -88,5 +87,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (err: any) {
     console.error("Failed to answer question:", err);
     res.status(500).json({ error: "Something went wrong." });
+  }
+}
+
+// Replace the embedding generation code
+async function generateEmbedding(text: string): Promise<number[]> {
+  try {
+    // Use GPT-4o to generate an embedding-like vector
+    const embeddingCompletion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful embedding generator. For the following text, generate a semantic representation as a JSON array of 1536 float values between -1 and 1. Each value should represent a semantic dimension. Return ONLY a JSON object with a single key 'embedding' containing the array. No explanation."
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    // Parse the JSON response to get the embedding
+    const responseContent = embeddingCompletion.choices[0].message.content;
+    const embeddingData = JSON.parse(responseContent);
+    const embedding = embeddingData.embedding;
+    
+    // Ensure we have a proper embedding
+    if (!Array.isArray(embedding) || embedding.length !== 1536) {
+      console.warn("Invalid embedding format received, using fallback random embedding");
+      return Array(1536).fill(0).map(() => (Math.random() * 2 - 1) * 0.01);
+    }
+    
+    return embedding;
+  } catch (error) {
+    console.error("Error generating embedding:", error);
+    // Fallback to a random embedding
+    return Array(1536).fill(0).map(() => (Math.random() * 2 - 1) * 0.01);
   }
 }

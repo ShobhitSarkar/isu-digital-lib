@@ -5,6 +5,13 @@ const nextConfig = {
   output: 'standalone',
   // Ensure we're using the correct directory structure
   reactStrictMode: true,
+  // Experimental features
+  experimental: {
+    // The correct way to enable server actions (as an object with a property)
+    serverActions: {
+      allowedOrigins: ['localhost:3000']
+    }
+  }
 };
 
 module.exports = nextConfig;

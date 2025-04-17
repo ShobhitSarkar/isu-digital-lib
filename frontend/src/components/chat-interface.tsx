@@ -30,7 +30,7 @@ export default function ChatInterface({ uploadedPapers }: ChatInterfaceProps) {
     setLoading(true);
 
     try {
-      const response = await fetch("/semantic/ask", {
+      const response = await fetch("/api/semantic/ask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

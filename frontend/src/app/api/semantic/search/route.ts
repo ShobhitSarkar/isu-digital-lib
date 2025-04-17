@@ -1,4 +1,5 @@
-// src/app/api/search/route.ts
+// src/semantic/search/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { OpenAI } from 'openai';
@@ -10,7 +11,7 @@ const COLLECTION_NAME = 'academic-papers';
  * OpenAI client instance to connect to the OpenAI API.
  */
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.MY_OPENAI_API_KEY,
 });
 
 /**

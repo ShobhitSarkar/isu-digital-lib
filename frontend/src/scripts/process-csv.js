@@ -13,10 +13,10 @@ const VECTOR_SIZE = 1536; // OpenAI ada-002 embeddings are 1536 dimensions
 // Initialize OpenAI with direct API key configuration
 console.log('Initializing OpenAI client...');
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.MY_OPENAI_API_KEY,
   // Try to force plain text authorization header
   defaultHeaders: {
-    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+    'Authorization': `Bearer ${process.env.MY_OPENAI_API_KEY}`
   }
 });
 
@@ -50,8 +50,8 @@ async function processCSV() {
     const openaiConnected = await testOpenAIConnection();
     if (!openaiConnected) {
       console.error('OpenAI connection failed. Please check your API key and network connectivity.');
-      console.log('Try setting the OPENAI_API_KEY environment variable directly rather than using a .env file.');
-      console.log('For example: OPENAI_API_KEY=your-key node src/scripts/process-csv-fixed.js');
+      console.log('Try setting the MY_OPENAI_API_KEY environment variable directly rather than using a .env file.');
+      console.log('For example: MY_OPENAI_API_KEY=your-key node src/scripts/process-csv-fixed.js');
       return;
     }
 

@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "check-env": "node src/scripts/env.js",
+    "dev": "node src/scripts/env.js && next dev",
+    "build": "node src/scripts/env.js && next build",
+    "start": "node src/scripts/env.js && next start",
+    "lint": "next lint",
+    "clean-deps": "rm -rf node_modules && rm -rf package-lock && npm i"
   },
   "dependencies": {
+    "@google-cloud/aiplatform": "^4.1.0",
     "@qdrant/js-client-rest": "^1.13.0",
     "@radix-ui/react-avatar": "^1.1.4",
     "@radix-ui/react-dropdown-menu": "^2.1.7",
