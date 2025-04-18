@@ -11,7 +11,7 @@ The ISU Semantic Search is a Retrieval Augmented Generation (RAG) library that e
 - Document retrieval using semantic search 
 - AI powered document analysis providing support to academic research 
 
-### Key features
+## Key features
 
 1. **Semantic Search:** 
 - Natural language query processing 
@@ -25,19 +25,28 @@ The ISU Semantic Search is a Retrieval Augmented Generation (RAG) library that e
 - Text chunking 
 - Vector embedding generation 
 
-3. RAG Implementation 
+3. **RAG Implementation**
 - OpenAI embeddings integration 
 - Qdrant vector database storage 
 - Context-aware response generatioon 
 - Source citations 
 
-### Architecture overview - Microservice Architecture
+## Architecture overview - Microservice Architecture
 
-We have a monolithic implementation right now. Need to refactor and move to a microservice architecture. 
+We have a monolithic implementation right now. We follow a `src/app/api` architecture right now, with dedicated paths for semantic search and assistant functionality. 
+
+
+Need to refactor and move to a microservice architecture shown in this picture: 
 
 ![alt text](isu-chatbot.jpg)
 
-## Prerequisites
+## API Endpoints: 
+
+- `POST /api/search`: Semantic search
+- `POST /api/ask`: Question answering
+
+
+## Running the application
 
 ### Required tools and technologies
 1. Node.js (18+)
@@ -74,7 +83,7 @@ QDRANT_URL=https://bae87590-0dea-4de8-89d6-e6d2ec8c718a.us-east4-0.gcp.cloud.qdr
 QDRANT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.uOONpNQ6YBORt0_grlaZ05MUp1PX5luubHgMRk4qXw8
 ```
 
-## Running the project locally 
+### Running the project locally 
 
 ```
 nvm i && npm i && npm run dev
