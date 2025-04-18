@@ -1,11 +1,11 @@
-// src/semantic/search/route.ts
+// frontend/src/app/api/semantic/search/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { OpenAI } from 'openai';
 
 // name of the Qdrant collection containing the paper embeddings
-const COLLECTION_NAME = 'academic-papers';
+const COLLECTION_NAME = 'isu-semantic-search';
 
 /**
  * OpenAI client instance to connect to the OpenAI API.
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     // Generate embedding for query
     const embeddingResponse = await openai.embeddings.create({
-      model: 'text-embedding-ada-002',
+      model: 'text-embedding-3-small',
       input: query,
       encoding_format: "float"
     });

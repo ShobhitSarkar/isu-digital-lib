@@ -1,4 +1,4 @@
-// src/semantic/ingest/route.ts
+// frontend/src/app/api/semantic/ingest/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
 import { parse } from 'papaparse';
@@ -23,7 +23,7 @@ const qdrant = new QdrantClient({
   port: null,
 });
 
-const COLLECTION_NAME = 'academic-papers'; // name of the Qdranr collection
+const COLLECTION_NAME = 'isu-semantic-search'; // name of the Qdranr collection
 const VECTOR_SIZE = 1536; // Size of the embeddings from OpenAI's ada-002 model
 
 /**
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
         
         // Generate embedding using OpenAI
         const embeddingResponse = await openai.embeddings.create({
-          model: 'text-embedding-ada-002',
+          model: 'text-embedding-3-small',
           input: content,
         });
         

@@ -1,4 +1,5 @@
-// src/scripts/process-csv-fixed.js
+// frontend/src/scripts/process-csv.js
+
 const fs = require('fs');
 const path = require('path');
 const { parse } = require('papaparse');
@@ -7,14 +8,13 @@ const { OpenAI } = require('openai');
 require('dotenv').config();
 
 // Collection settings
-const COLLECTION_NAME = 'academic-papers';
+const COLLECTION_NAME = 'isu-semantic-search';
 const VECTOR_SIZE = 1536; // OpenAI ada-002 embeddings are 1536 dimensions
 
 // Initialize OpenAI with direct API key configuration
 console.log('Initializing OpenAI client...');
 const openai = new OpenAI({
   apiKey: process.env.MY_OPENAI_API_KEY,
-  // Try to force plain text authorization header
   defaultHeaders: {
     'Authorization': `Bearer ${process.env.MY_OPENAI_API_KEY}`
   }
@@ -25,7 +25,7 @@ async function testOpenAIConnection() {
   try {
     console.log('Testing OpenAI connection with embedding request...');
     const response = await openai.embeddings.create({
-      model: "text-embedding-ada-002",
+      model: "text-embedding-3-small",
       input: "Hello world",
       encoding_format: "float"
     });
@@ -137,7 +137,7 @@ async function processCSV() {
         
         // Generate embedding using OpenAI with explicit model specification
         const embeddingResponse = await openai.embeddings.create({
-          model: "text-embedding-ada-002",
+          model: "text-embedding-3-small",
           input: content,
           encoding_format: "float"
         });
@@ -215,7 +215,7 @@ async function processCSV() {
           console.log(`Generating embedding for: "${paper.title.substring(0, 50)}..."`);
           
           const embeddingResponse = await openai.embeddings.create({
-            model: "text-embedding-ada-002",
+            model: "text-embedding-3-small",
             input: content,
             encoding_format: "float"
           });

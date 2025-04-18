@@ -1,4 +1,5 @@
-// scripts/check-env.js
+// frontend/src/scripts/env.js
+
 require('dotenv').config();
 
 console.log('\n=== ENVIRONMENT VARIABLE CHECK ===\n');

@@ -13,9 +13,10 @@ export default function SearchTab() {
   const handleSearch = async (query: string) => {
     if (!query.trim()) return;
     
+    console.log("🔍 Frontend: Sending search query:", query);
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      
       const response = await fetch("/api/semantic/ask", {
         method: "POST",
         headers: {
@@ -24,23 +25,28 @@ export default function SearchTab() {
         body: JSON.stringify({ query }),
       });
       
+      console.log("🔍 Frontend: Response status:", response.status);
+      
       if (!response.ok) {
-        throw new Error(`Search failed: ${response.statusText}`);
+        const errorData = await response.json();
+        console.error("Frontend: Search API error:", errorData);
+        throw new Error(errorData.message || `Search failed: ${response.statusText}`);
       }
       
       const data = await response.json();
+      console.log("🔍 Frontend: Response data received:", !!data);
       
       if (data.answer) {
         setAnswer(data.answer);
         setCitations(data.citations || []);
       } else {
-        console.error("No answer returned");
-        setAnswer("");
+        console.error("Frontend: No answer returned in response:", data);
+        setAnswer("Sorry, I couldn't find a relevant answer. Please try a different query.");
         setCitations([]);
       }
     } catch (error) {
-      console.error("Search error:", error);
-      setAnswer("");
+      console.error("Frontend: Search error:", error);
+      setAnswer(`Error: ${error.message || "Failed to search. Please try again later."}`);
       setCitations([]);
     } finally {
       setLoading(false);
