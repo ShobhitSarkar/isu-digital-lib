@@ -12,49 +12,54 @@
                 "value": "={{ $json.Title }}"
               },
               {
-                "name": "Filename",
-                "value": "={{ $json.Filename }}"
+                "name": "Date Issued",
+                "value": "={{ $json['Date Issued'] }}"
               },
               {
-                "name": "=Date",
-                "value": "={{ $json.Date }}"
-              },
-              {
-                "name": "Authors",
-                "value": "={{ $json.Authors }}"
+                "name": "Author",
+                "value": "={{ $json.Author }}"
               },
               {
                 "name": "Advisors",
-                "value": "={{ $json.Advisor }}"
+                "value": "={{ $json.Advisors }}"
               },
               {
                 "name": "Abstract",
                 "value": "={{ $json.Abstract }}"
               },
               {
-                "name": "Academic Unit",
-                "value": "={{ $json['Academic Unit'] }}"
+                "name": "Department",
+                "value": "={{ $json.Department }}"
               },
               {
-                "name": "Type",
-                "value": "={{ $json['Subject Categories'] }}"
+                "name": "Department",
+                "value": "={{ $json.Department }}"
               },
               {
-                "name": "Keywords",
-                "value": "={{ $json.Keywords }}"
-              },
-              {
-                "name": "=DOI",
+                "name": "DOI",
                 "value": "={{ $json.DOI }}"
               },
               {
-                "name": "Permanent Link",
-                "value": "={{ $json['Permanent Link'] }}"
+                "name": "URL",
+                "value": "={{ $json.Url }}"
               },
               {
-                "name": "Collections",
-                "value": "={{ $json.Collections }}"
-              }
+                "name": "Subject",
+                "value": "={{ $json.Subject }}"
+              },
+              {
+                "name": "Keywords",
+                "value": "={{ $json['Keywords'] }}"
+              },
+              {
+                "name": "Thesis Degree Level",
+                "value": "={{ $json['Thesis Degree Level']}}"
+              },
+              {
+                "name": "Thesis Degree",
+                "value": "={{ $json['Thesis Degree'] }}"
+              },
+              {}
             ]
           }
         }
@@ -598,7 +603,7 @@
         "promptType": "define",
         "text": "={{ $json.chatInput }}",
         "options": {
-          "systemMessage": "Make sure that the answers are coming only from the data in the prompt. Make sure that your answers are articles from papers from https://dr.lib.iastate.edu.\n\nYou are an intelligent research assistant specialized in academic theses and dissertations. You have access to a semantic vector database called \"repository\" that contains metadata from research documents. Your role is to help users explore and understand the contents of this repository.\n\nWhen a user asks a question, search the repository for the most relevant documents using their semantic content, not just keyword matches. Use the document's abstract and title to understand its subject matter. You may also use other metadata such as authors, academic unit, type, date, DOI, or keywords to support your response.\n\nProvide clear, factual, and helpful answers based on the retrieved documents. If appropriate, summarize relevant abstracts, explain the significance of a work, or suggest related topics. Prioritize precision and usefulness. If a user’s query cannot be answered with the available data, politely let them know.\n\nAlways return your response in natural, helpful language, followed by a list of the most relevant documents in a concise format like:\n\n- **Title**: [title]\n  - **Authors**: [authors]\n  - **Date**: [date]\n  - **Link**: [permanent link to https://dr.lib.iastate.edu]\n\nOnly include documents that are highly relevant to the user’s question. Do not fabricate information or cite sources not present in the repository.\n"
+          "systemMessage": "Make sure that the answers are coming only from the data in the prompt. Make sure that your answers are articles from papers from https://dr.lib.iastate.edu.\n\nFeel free to perform aggregations or statistical analysis across the entire collection to determine which academic unit has the most publications.\n\nYou are an intelligent research assistant specialized in academic theses and dissertations. You have access to a semantic vector database called \"repository\" that contains metadata from research documents. Your role is to help users explore and understand the contents of this repository.\n\nWhen a user asks a question, search the repository for the most relevant documents using their semantic content, not just keyword matches. Use the document's abstract and title to understand its subject matter. You may also use other metadata such as authors, academic unit, type, date, DOI, or keywords to support your response. You can filter papers based on various metadata fields such as the number of authors, number of advisors, publication year, keywords, and subjects.\n\nProvide clear, factual, and helpful answers based on the retrieved documents. If appropriate, summarize relevant abstracts, explain the significance of a work, or suggest related topics. Prioritize precision and usefulness. If a user’s query cannot be answered with the available data, politely let them know.\n\nAlways return your response in natural, helpful language, followed by a list of the most relevant documents in a concise format like:\n\n- **Title**: [Title]\n  - **Authors**: [Author]\n  - **Date**: [Date Issued]\n  - **Link**: [Link Text](Link to https://dr.lib.iastate.edu)\n\nOnly include documents that are highly relevant to the user’s question. Do not fabricate information or cite sources not present in the repository.\n\nIf a response is not available, respond the following: \"Please try to limit the scope of your prompt. For example, List papers that talk about machine learning\""
         }
       },
       "id": "27f6da62-bce8-43e0-972b-5668fe6018ff",
@@ -612,7 +617,7 @@
     },
     {
       "parameters": {
-        "contextWindowLength": 40
+        "contextWindowLength": 50
       },
       "id": "207ed2b8-1e3a-4f54-bf97-c49231b187aa",
       "name": "Window Buffer Memory",
@@ -639,7 +644,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-2.5-pro-exp-03-25",
+        "modelName": "models/gemini-2.0-flash-thinking-exp-1219",
         "options": {}
       },
       "id": "627975f8-3c49-41be-b0c4-7a5b022990d5",
@@ -848,7 +853,7 @@
           "mode": "list",
           "cachedResultName": "repository"
         },
-        "topK": 20,
+        "topK": 50,
         "options": {}
       },
       "id": "a4d30fb0-743b-4010-adc5-e9753a6f1b59",
@@ -887,25 +892,6 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
-        "text": "Qdrant vector store upsert completed",
-        "additionalFields": {
-          "appendAttribution": false
-        }
-      },
-      "id": "d03308f6-2807-42dd-a22d-58e4c92a0bd8",
-      "name": "Send Completed Message",
-      "type": "n8n-nodes-base.telegram",
-      "position": [
-        1860,
-        1620
-      ],
-      "webhookId": "382a3b43-b83f-47b1-a276-67c6b98a441a",
-      "typeVersion": 1.2,
-      "disabled": true
-    },
-    {
-      "parameters": {
         "content": "# 🤖 AI-Powered RAG Chatbot with Google Drive Integration\n\nThis workflow creates a powerful RAG (Retrieval-Augmented Generation) chatbot that can process, store, and interact with documents from Google Drive using Qdrant vector storage and Google's Gemini AI.\n\n## How It Works\n\n### Document Processing & Storage 📚\n- Retrieves documents from a specified Google Drive folder\n- Processes and splits documents into manageable chunks\n- Extracts metadata using AI for enhanced search capabilities\n- Stores document vectors in Qdrant for efficient retrieval\n\n### Intelligent Chat Interface 💬\n- Provides a conversational interface powered by Google Gemini\n- Uses RAG to retrieve relevant context from stored documents\n- Maintains chat history in Google Docs for reference\n- Delivers accurate, context-aware responses\n\n### Vector Store Management 🗄️\n- Features secure delete operations with human verification\n- Includes Telegram notifications for important operations\n- Maintains data integrity with proper version control\n- Supports batch processing of documents\n\n## Setup Steps\n\n1. Configure API Credentials:\n   - Set up Google Drive & Docs access\n   - Configure Gemini AI API\n   - Set up Qdrant vector store connection\n   - Add Telegram bot for notifications\n\n2. Configure Document Sources:\n   - Set Google Drive folder ID\n   - Define Qdrant collection name\n   - Set up document processing parameters\n\n3. Test and Deploy:\n   - Verify document processing\n   - Test chat functionality\n   - Confirm vector store operations\n   - Check notification system\n\n\nThis workflow is ideal for organizations needing to create intelligent chatbots that can access and understand large document repositories while maintaining context and providing accurate responses through RAG technology.\n",
         "height": 1240,
         "width": 700
@@ -918,6 +904,22 @@
         940
       ],
       "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "path": "1abc8e96-2f92-4b66-bb9c-2ecdba22963b",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        380
+      ],
+      "id": "b3fdd808-f188-48f9-b95d-e17ccd2e53dd",
+      "name": "Webhook1",
+      "webhookId": "1abc8e96-2f92-4b66-bb9c-2ecdba22963b"
     }
   ],
   "connections": {
@@ -956,13 +958,7 @@
     },
     "Loop Over Items": {
       "main": [
-        [
-          {
-            "node": "Send Completed Message",
-            "type": "main",
-            "index": 0
-          }
-        ],
+        [],
         [
           {
             "node": "Download File From Google Drive",
@@ -1240,6 +1236,17 @@
           {
             "node": "AI Agent",
             "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
             "index": 0
           }
         ]
