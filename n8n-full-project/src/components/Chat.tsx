@@ -71,8 +71,8 @@ export default function Chat() {
 
     try {
       const response = await axios.post('/api/chat', {
-        message: userMessage,
-        mode: activeTab
+        sessionId: activeChatId,
+        chatInput: userMessage
       });
 
       const assistantMessage: Message = {
