@@ -9,7 +9,7 @@ const nextConfig = {
   experimental: {
     // The correct way to enable server actions (as an object with a property)
     serverActions: {
-      allowedOrigins: ['localhost:3000']
+      allowedOrigins: ['*']
     }
   }
 };

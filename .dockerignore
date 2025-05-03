@@ -1,0 +1,8 @@
+node_modules
+.DS_Store
+.git
+.github
+.vscode
+*.md
+.env*
+.gitignore
