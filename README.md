@@ -76,13 +76,6 @@ QDRANT_API_KEY=your_qdrant_key
 NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
-In order to access the vectorized database for the semantic search functionality, here are the Qdrant details: 
-
-```
-QDRANT_URL=https://bae87590-0dea-4de8-89d6-e6d2ec8c718a.us-east4-0.gcp.cloud.qdrant.io
-QDRANT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.uOONpNQ6YBORt0_grlaZ05MUp1PX5luubHgMRk4qXw8
-```
-
 ### Running the project locally 
 
 ```
