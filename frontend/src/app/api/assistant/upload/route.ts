@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import OpenAI from "openai";
 import { randomUUID } from "crypto";
+import { ensureProtocol } from "@/lib/utils";
 
 /**
  * OpenAI client instance to connect to the OpenAI API.
@@ -16,7 +17,7 @@ const openai = new OpenAI({
  * Qdrant client instance to connect to the Qdrant server.
  */
 const qdrant = new QdrantClient({
-  url: process.env.QDRANT_URL,
+  url: ensureProtocol(process.env.QDRANT_URL),
   apiKey: process.env.QDRANT_API_KEY,
   port: null,
   checkCompatibility: false

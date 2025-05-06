@@ -2,12 +2,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { QdrantClient } from "@qdrant/js-client-rest";
+import { ensureProtocol } from "@/lib/utils";
 
 /**
  * Instantiate a Qdrant client to connect to the Qdrant server
  */
 const qdrant = new QdrantClient({
-  url: process.env.QDRANT_URL,
+  url: ensureProtocol(process.env.QDRANT_URL),
   apiKey: process.env.QDRANT_API_KEY,
   port: null,
   checkCompatibility: false
