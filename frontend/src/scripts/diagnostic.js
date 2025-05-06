@@ -72,6 +72,7 @@ QDRANT_API_KEY=your_qdrant_api_key_here
       url: qdrantUrl,
       apiKey: qdrantKey || undefined,
       port: null,
+      checkCompatibility: false
     });
     
     console.log('Fetching collections...');

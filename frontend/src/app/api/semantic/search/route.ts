@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
       url: process.env.QDRANT_URL,
       apiKey: process.env.QDRANT_API_KEY,
       port: null,
+      checkCompatibility: false
     });
 
     // Generate embedding for query
