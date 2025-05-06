@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import OpenAI from "openai";
+import { ensureProtocol } from "@/lib/utils";
 
 const VECTOR_SIZE = 1536; // size of the vector embeddings from OpenAI's model 
 const COLLECTION = "academic-docs"; // name of the Qdrant collection 
@@ -11,7 +12,7 @@ const COLLECTION = "academic-docs"; // name of the Qdrant collection
  * Set up the Qdrant client to connect to the Qdrant server.
  */
 const qdrant = new QdrantClient({
-  url: process.env.QDRANT_URL,
+  url: ensureProtocol(process.env.QDRANT_URL),
   apiKey: process.env.QDRANT_API_KEY,
   port: null,
   checkCompatibility: false

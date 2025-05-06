@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { OpenAI } from 'openai';
+import { ensureProtocol } from '@/lib/utils';
 
 // name of the Qdrant collection containing the paper embeddings
 const COLLECTION_NAME = 'isu-semantic-search';
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     // Initialize Qdrant client
     const qdrant = new QdrantClient({
-      url: process.env.QDRANT_URL,
+      url: ensureProtocol(process.env.QDRANT_URL),
       apiKey: process.env.QDRANT_API_KEY,
       port: null,
       checkCompatibility: false
