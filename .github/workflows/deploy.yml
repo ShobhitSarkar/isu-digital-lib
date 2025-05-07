@@ -25,7 +25,7 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # Create a simpler Cloud Build configuration file with only one custom substitution
+      # Create a Cloud Build configuration file with hardcoded values
       - name: Create Cloud Build config
         run: |
           cat > cloudbuild.yaml <<EOF
@@ -64,16 +64,13 @@ jobs:
                 - '--image'
                 - 'gcr.io/$PROJECT_ID/isu-semantic-search:$COMMIT_SHA'
                 - '--region'
-                - '$$_REGION'
+                - 'us-central1'
                 - '--platform'
                 - 'managed'
                 - '--allow-unauthenticated'
-          
-          substitutions:
-            _REGION: 'us-central1'
           EOF
 
-      # Submit the Cloud Build job with minimal substitutions
+      # Submit the Cloud Build job without any substitutions
       - name: Submit to Cloud Build
         run: |
-          gcloud builds submit --config=cloudbuild.yaml --substitutions=_REGION='${{ secrets.GCP_REGION }}'
+          gcloud builds submit --config=cloudbuild.yaml
