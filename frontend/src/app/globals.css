@@ -122,3 +122,47 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile-specific adjustments */
+@media (max-width: 640px) {
+  /* Reduce padding and margins on small screens */
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Fix scrolling issues on mobile */
+  html, body {
+    height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Adjust chat interface for small screens */
+  .message-bubble {
+    max-width: 90% !important;
+  }
+
+  /* Make form elements more touchable */
+  button, 
+  input[type="submit"],
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Ensure cards have sufficient padding */
+  .card-content {
+    padding: 0.75rem !important;
+  }
+
+  /* Better touch area for dropdown items */
+  .dropdown-item {
+    padding: 0.75rem !important;
+  }
+}

@@ -9,14 +9,14 @@ export default function Header() {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center text-cardinal font-bold text-xl">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gold flex items-center justify-center text-cardinal font-bold text-sm sm:text-xl">
               ISU
             </div>
-            <span className="text-xl font-semibold hidden sm:inline">Digital Repository</span>
+            <span className="text-sm sm:text-xl font-semibold text-white">Digital Repository</span>
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <ModeToggle />
           <Button variant="ghost" size="icon" className="text-white hover:text-gold">
             <UserCircle className="h-5 w-5" />

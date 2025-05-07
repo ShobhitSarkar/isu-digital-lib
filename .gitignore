@@ -62,3 +62,6 @@ chroma_db/
 .env
 *.pem
 *.key
+
+# Scratch files
+.txt 
