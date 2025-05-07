@@ -25,6 +25,16 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
+      # Create .env file with secrets before building
+      - name: Create environment file
+        working-directory: ./frontend
+        run: |
+          touch .env
+          echo MY_OPENAI_API_KEY=${{ secrets.MY_OPENAI_API_KEY }} >> .env
+          echo QDRANT_URL=${{ secrets.QDRANT_URL }} >> .env
+          echo QDRANT_API_KEY=${{ secrets.QDRANT_API_KEY }} >> .env
+          cat .env
+
       - name: Build application
         working-directory: ./frontend
         run: npm run build
@@ -32,6 +42,7 @@ jobs:
           MY_OPENAI_API_KEY: ${{ secrets.MY_OPENAI_API_KEY }}
           QDRANT_URL: ${{ secrets.QDRANT_URL }}
           QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+          NEXT_PUBLIC_API_URL: http://localhost:3000
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -51,6 +62,10 @@ jobs:
           tags: ghcr.io/shobhitsarkar/isu-semantic-search:latest,ghcr.io/shobhitsarkar/isu-semantic-search:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            MY_OPENAI_API_KEY=${{ secrets.MY_OPENAI_API_KEY }}
+            QDRANT_URL=${{ secrets.QDRANT_URL }}
+            QDRANT_API_KEY=${{ secrets.QDRANT_API_KEY }}
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
