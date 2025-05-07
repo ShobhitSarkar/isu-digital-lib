@@ -109,18 +109,18 @@ export default function PDFExtractor({ onExtract, onError }: PDFExtractorProps) 
     <div className="space-y-4">
       <div 
         {...getRootProps()} 
-        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
+        className={`border-2 border-dashed rounded-lg p-4 sm:p-6 text-center cursor-pointer transition-colors min-h-[120px] flex items-center justify-center
           ${isDragActive 
             ? 'border-cardinal bg-cardinal/5 dark:border-gold dark:bg-gold/5' 
             : 'border-muted-foreground/30 hover:border-muted-foreground/50'}`}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center justify-center space-y-2">
-          <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm font-medium">
-            {isDragActive ? 'Drop PDF files here' : 'Drag & drop PDF files here or click to browse'}
+          <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mb-1 sm:mb-2" />
+          <p className="text-xs sm:text-sm font-medium">
+            {isDragActive ? 'Drop PDF files here' : 'Tap to select PDF files'}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground hidden sm:block">
             Only PDF files are supported
           </p>
         </div>

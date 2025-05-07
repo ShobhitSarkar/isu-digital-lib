@@ -8,13 +8,13 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col">
       <Header />
-      <div className="container mx-auto px-4 py-6 flex-1 flex flex-col">
-        <h1 className="text-3xl font-bold text-center mb-6 text-cardinal dark:text-gold">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-6 text-cardinal dark:text-gold">
           Iowa State University Digital Repository
         </h1>
 
         <Tabs defaultValue="search" className="flex-1 flex flex-col">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
+          <TabsList className="grid w-full max-w-xs sm:max-w-md mx-auto grid-cols-2 mb-4 sm:mb-6">
             <TabsTrigger value="search">Semantic Search</TabsTrigger>
             <TabsTrigger value="chat">Paper Assistant</TabsTrigger>
           </TabsList>

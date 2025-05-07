@@ -152,8 +152,72 @@ export default function ChatTab() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
-        <Card className="lg:col-span-1">
+      <div className="grid grid-cols-1 gap-6 flex-1">
+        <Card className="lg:hidden">
+          <CardHeader>
+            <CardTitle>Uploaded Papers</CardTitle>
+            <CardDescription>Upload papers to ask questions about them</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PaperUploader onUpload={handlePaperUpload} />
+            
+            {/* Status messages */}
+            {cleanupStatus === 'success' && (
+              <div className="mt-2 p-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs rounded">
+                Operation completed successfully
+              </div>
+            )}
+            
+            {cleanupStatus === 'error' && (
+              <div className="mt-2 p-2 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 text-xs rounded">
+                An error occurred. Please try again.
+              </div>
+            )}
+
+            {isCleaningUp && (
+              <div className="mt-2 p-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100 text-xs rounded flex items-center">
+                <div className="mr-2 h-3 w-3 rounded-full bg-yellow-500 animate-pulse"></div>
+                Processing...
+              </div>
+            )}
+            
+            {/* Show 2 most recent papers if any on mobile */}
+            {uploadedPapers.length > 0 && (
+              <div className="mt-4">
+                <p className="font-medium text-sm mb-2">{uploadedPapers.length} papers uploaded</p>
+                <div className="space-y-2">
+                  {uploadedPapers.slice(0, 2).map((paper) => (
+                    <div key={paper.id} className="p-3 border rounded-md">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 mr-2">
+                          <p className="font-medium truncate text-xs">{paper.name}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {uploadedPapers.length > 2 && (
+                    <p className="text-xs text-muted-foreground">
+                      +{uploadedPapers.length - 2} more papers
+                    </p>
+                  )}
+                </div>
+                <div className="mt-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 text-xs py-1"
+                    onClick={cleanup}
+                    disabled={isCleaningUp}
+                  >
+                    Clear All Papers
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="hidden lg:block lg:col-span-1">
+          {/* Original desktop sidebar content */}
           <CardHeader>
             <CardTitle>Uploaded Papers</CardTitle>
             <CardDescription>Upload papers to ask questions about them</CardDescription>
