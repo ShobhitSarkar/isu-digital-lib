@@ -74,6 +74,12 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
 
+      - name: Debug Google Cloud Authentication
+        run: |
+          gcloud auth list
+          gcloud config list
+          gcloud projects list
+
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy isu-digital-lib \
