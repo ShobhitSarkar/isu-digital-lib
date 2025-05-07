@@ -2,16 +2,15 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { QdrantClient } from "@qdrant/js-client-rest";
-import OpenAI from "openai";
+import { createOpenAIClient } from "@/lib/openai-config";
 import { randomUUID } from "crypto";
 import { ensureProtocol } from "@/lib/utils";
 
 /**
  * OpenAI client instance to connect to the OpenAI API.
  */
-const openai = new OpenAI({
-  apiKey: process.env.MY_OPENAI_API_KEY,
-});
+const openai = createOpenAIClient();
+
 
 /**
  * Qdrant client instance to connect to the Qdrant server.

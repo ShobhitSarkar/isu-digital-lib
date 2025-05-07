@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { OpenAI } from 'openai';
+import { createOpenAIClient } from '@/lib/openai-config';
 import { ensureProtocol } from '@/lib/utils';
 
 // name of the Qdrant collection containing the paper embeddings
@@ -11,9 +11,7 @@ const COLLECTION_NAME = 'isu-semantic-search';
 /**
  * OpenAI client instance to connect to the OpenAI API.
  */
-const openai = new OpenAI({
-  apiKey: process.env.MY_OPENAI_API_KEY,
-});
+const openai = createOpenAIClient();
 
 /**
  * Semantic search endpoint for academic papers

@@ -1,13 +1,12 @@
 // src/app/api/assistant/chat.ts
 
-import OpenAI from "openai";
+import { createOpenAIClient } from "@/lib/openai-config";
 
 /**
  * OpenAI client instance to connect to the OpenAI API.
  */
-const openai = new OpenAI({
-  apiKey: process.env.MY_OPENAI_API_KEY,
-});
+const openai = createOpenAIClient();
+
 
 /**
  * Generates answers to the given question using provided context through 

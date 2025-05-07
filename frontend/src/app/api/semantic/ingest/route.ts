@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { parse } from 'papaparse';
-import OpenAI from 'openai';
+import { createOpenAIClient } from '@/lib/openai-config';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import fs from 'fs';
 import path from 'path';
@@ -10,9 +10,9 @@ import path from 'path';
 /**
  * OpenAI client configuration instance for generating embeddings 
  */
-const openai = new OpenAI({
-  apiKey: process.env.MY_OPENAI_API_KEY,
-});
+const openai = createOpenAIClient();
+
+
 
 /**
  * Qdrant client configuration for generating embeddings 

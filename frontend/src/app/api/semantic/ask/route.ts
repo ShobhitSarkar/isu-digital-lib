@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { OpenAI } from 'openai';
+import { createOpenAIClient } from '@/lib/openai-config';
 import { ensureProtocol } from '@/lib/utils';
 
 /**
@@ -13,10 +13,8 @@ const COLLECTION_NAME = 'isu-semantic-search';
 /**
  * OpenAI client instance to connect to the OpenAI API.
  */
-const openai = new OpenAI({
-  apiKey: process.env.MY_OPENAI_API_KEY,
-  // Remove the redundant headers to avoid auth conflicts
-});
+const openai = createOpenAIClient();
+
 
 /**
  * API endpoint handler for semantic search and question answering

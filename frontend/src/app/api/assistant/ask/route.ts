@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { QdrantClient } from "@qdrant/js-client-rest";
-import OpenAI from "openai";
+import { createOpenAIClient } from "@/lib/openai-config";
 import { ensureProtocol } from "@/lib/utils";
 
 const VECTOR_SIZE = 1536; // size of the vector embeddings from OpenAI's model 
@@ -21,9 +21,8 @@ const qdrant = new QdrantClient({
 /**
  * Set up the OpenAI client to connect to the OpenAI API.
  */
-const openai = new OpenAI({
-  apiKey: process.env.MY_OPENAI_API_KEY,
-});
+const openai = createOpenAIClient();
+
 
 /**
  * API endpoint handler that uses semantic search. 
