@@ -25,7 +25,7 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # Create a Cloud Build configuration file
+      # Create a simpler Cloud Build configuration file with only one custom substitution
       - name: Create Cloud Build config
         run: |
           cat > cloudbuild.yaml <<EOF
@@ -41,10 +41,6 @@ jobs:
               entrypoint: npm
               args: ['run', 'build']
               dir: 'frontend'
-              env:
-                - 'MY_OPENAI_API_KEY=$$_OPENAI_KEY'
-                - 'QDRANT_URL=$$_QDRANT_URL'
-                - 'QDRANT_API_KEY=$$_QDRANT_KEY'
               
             # Build the container
             - name: 'gcr.io/cloud-builders/docker'
@@ -72,19 +68,12 @@ jobs:
                 - '--platform'
                 - 'managed'
                 - '--allow-unauthenticated'
-                - '--set-env-vars'
-                - 'MY_OPENAI_API_KEY=$$_OPENAI_KEY,QDRANT_URL=$$_QDRANT_URL,QDRANT_API_KEY=$$_QDRANT_KEY'
           
           substitutions:
-            _REGION: '${{ secrets.GCP_REGION }}'
-            _OPENAI_KEY: '${{ secrets.MY_OPENAI_API_KEY }}'
-            _QDRANT_URL: '${{ secrets.QDRANT_URL }}'
-            _QDRANT_KEY: '${{ secrets.QDRANT_API_KEY }}'
+            _REGION: 'us-central1'
           EOF
 
-      # Submit the Cloud Build job with the correct substitutions
+      # Submit the Cloud Build job with minimal substitutions
       - name: Submit to Cloud Build
         run: |
-          gcloud builds submit \
-            --config=cloudbuild.yaml \
-            --substitutions=_REGION='${{ secrets.GCP_REGION }}',COMMIT_SHA='${{ github.sha }}',_OPENAI_KEY='${{ secrets.MY_OPENAI_API_KEY }}',_QDRANT_URL='${{ secrets.QDRANT_URL }}',_QDRANT_KEY='${{ secrets.QDRANT_API_KEY }}'
+          gcloud builds submit --config=cloudbuild.yaml --substitutions=_REGION='${{ secrets.GCP_REGION }}'
