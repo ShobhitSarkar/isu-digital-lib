@@ -42,9 +42,9 @@ jobs:
               args: ['run', 'build']
               dir: 'frontend'
               env:
-                - 'MY_OPENAI_API_KEY=$$MY_OPENAI_API_KEY'
-                - 'QDRANT_URL=$$QDRANT_URL'
-                - 'QDRANT_API_KEY=$$QDRANT_API_KEY'
+                - 'MY_OPENAI_API_KEY=$$_OPENAI_KEY'
+                - 'QDRANT_URL=$$_QDRANT_URL'
+                - 'QDRANT_API_KEY=$$_QDRANT_KEY'
               
             # Build the container
             - name: 'gcr.io/cloud-builders/docker'
@@ -68,18 +68,18 @@ jobs:
                 - '--image'
                 - 'gcr.io/$PROJECT_ID/isu-semantic-search:$COMMIT_SHA'
                 - '--region'
-                - '$$REGION'
+                - '$$_REGION'
                 - '--platform'
                 - 'managed'
                 - '--allow-unauthenticated'
                 - '--set-env-vars'
-                - 'MY_OPENAI_API_KEY=$$MY_OPENAI_API_KEY,QDRANT_URL=$$QDRANT_URL,QDRANT_API_KEY=$$QDRANT_API_KEY'
+                - 'MY_OPENAI_API_KEY=$$_OPENAI_KEY,QDRANT_URL=$$_QDRANT_URL,QDRANT_API_KEY=$$_QDRANT_KEY'
           
           substitutions:
-            REGION: '${{ secrets.GCP_REGION }}'
-            MY_OPENAI_API_KEY: '${{ secrets.MY_OPENAI_API_KEY }}'
-            QDRANT_URL: '${{ secrets.QDRANT_URL }}'
-            QDRANT_API_KEY: '${{ secrets.QDRANT_API_KEY }}'
+            _REGION: '${{ secrets.GCP_REGION }}'
+            _OPENAI_KEY: '${{ secrets.MY_OPENAI_API_KEY }}'
+            _QDRANT_URL: '${{ secrets.QDRANT_URL }}'
+            _QDRANT_KEY: '${{ secrets.QDRANT_API_KEY }}'
           EOF
 
       # Submit the Cloud Build job with the correct substitutions
@@ -87,4 +87,4 @@ jobs:
         run: |
           gcloud builds submit \
             --config=cloudbuild.yaml \
-            --substitutions=REGION='${{ secrets.GCP_REGION }}',COMMIT_SHA='${{ github.sha }}',MY_OPENAI_API_KEY='${{ secrets.MY_OPENAI_API_KEY }}',QDRANT_URL='${{ secrets.QDRANT_URL }}',QDRANT_API_KEY='${{ secrets.QDRANT_API_KEY }}'
+            --substitutions=_REGION='${{ secrets.GCP_REGION }}',COMMIT_SHA='${{ github.sha }}',_OPENAI_KEY='${{ secrets.MY_OPENAI_API_KEY }}',_QDRANT_URL='${{ secrets.QDRANT_URL }}',_QDRANT_KEY='${{ secrets.QDRANT_API_KEY }}'
