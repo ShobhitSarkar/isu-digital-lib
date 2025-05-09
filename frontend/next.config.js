@@ -31,12 +31,6 @@ const nextConfig = {
     NEXT_PUBLIC_APP_NAME: 'ISU Digital Repository',
   },
   
-  // Disable automatic telemetry collection
-  telemetry: false,
-  
-  // Add build-time optimizations
-  swcMinify: true,
-  
   // Exclude specific paths from the build
   eslint: {
     ignoreDuringBuilds: true,
