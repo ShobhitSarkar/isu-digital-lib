@@ -14,7 +14,9 @@ A Retrieval Augmented Generation (RAG) application for Iowa State University's C
 
 ISU Semantic Search enables natural language querying of Iowa State University's academic research repository. The system uses advanced semantic search capabilities and OpenAI's large language models to provide context-aware responses based on the repository's content.
 
-[![Cloud Run Deployment](https://storage.googleapis.com/gweb-cloudblog-publish/images/run_button.max-300x300.png)](https://isu-digital-lib-random-hash.a.run.app)
+<a href="https://isu-digital-lib-random-hash.a.run.app">
+  <img src="https://deploy.cloud.run/button.svg" alt="Run on Google Cloud" width="150px"/>
+</a>
 
 ### Key Features
 
