@@ -12,7 +12,23 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/isu-digital-lib:latest']
   
-  # Deploy to Cloud Run
+  # First, clear all existing environment variables
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'isu-digital-lib'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/isu-digital-lib:latest'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--clear-env-vars'
+  
+  # Then, set the environment variables
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -27,11 +43,7 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
       - '--set-env-vars'
-      - 'MY_OPENAI_API_KEY=${_MY_OPENAI_API_KEY}'
-      - '--set-env-vars'
-      - 'QDRANT_URL=${_QDRANT_URL}'
-      - '--set-env-vars'
-      - 'QDRANT_API_KEY=${_QDRANT_API_KEY}'
+      - 'MY_OPENAI_API_KEY=${_MY_OPENAI_API_KEY},QDRANT_URL=${_QDRANT_URL},QDRANT_API_KEY=${_QDRANT_API_KEY}'
 
 timeout: '1800s'  # 30 minutes
 
