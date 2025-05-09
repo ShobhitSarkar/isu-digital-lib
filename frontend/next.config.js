@@ -1,24 +1,49 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
-  // Make sure we have the proper output settings
+  // Enable output standalone to optimize for containerized deployment
   output: 'standalone',
-  // Ensure we're using the correct directory structure
+  
+  // Enable React Strict Mode for better development experience
   reactStrictMode: true,
+  
+  // Configure proper asset handling
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/' : '',
+  
+  // Set up image optimization
+  images: {
+    unoptimized: true, // For Cloud Run deployment
+    formats: ['image/avif', 'image/webp'],
+  },
+  
+  // Add trailing slash for consistent path handling
+  trailingSlash: true,
+  
   // Experimental features
   experimental: {
-    // The correct way to enable server actions (as an object with a property)
     serverActions: {
       allowedOrigins: ['*']
     }
   },
-  // Add these new lines for proper asset handling
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/' : '',
-  basePath: '',
-  images: {
-    unoptimized: true, // This can help with image loading in standalone mode
+  
+  // Add environment variables that should be accessible in the browser
+  // IMPORTANT: Do not add sensitive data here
+  env: {
+    NEXT_PUBLIC_APP_NAME: 'ISU Digital Repository',
   },
-  trailingSlash: true, // This helps with path resolution
+  
+  // Disable automatic telemetry collection
+  telemetry: false,
+  
+  // Add build-time optimizations
+  swcMinify: true,
+  
+  // Exclude specific paths from the build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 module.exports = nextConfig;

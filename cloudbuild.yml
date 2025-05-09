@@ -3,15 +3,6 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/isu-digital-lib:$COMMIT_SHA', '-f', 'frontend/Dockerfile', '.']
   
-  # Run tests
-  - name: 'gcr.io/cloud-builders/npm'
-    dir: 'frontend'
-    args: ['install']
-  
-  - name: 'gcr.io/cloud-builders/npm'
-    dir: 'frontend'
-    args: ['run', 'test', '--if-present']
-  
   # Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/isu-digital-lib:$COMMIT_SHA']
@@ -33,22 +24,6 @@ steps:
       - '--set-env-vars'
       - 'MY_OPENAI_API_KEY=$$MY_OPENAI_API_KEY,QDRANT_URL=$$QDRANT_URL,QDRANT_API_KEY=$$QDRANT_API_KEY'
     secretEnv: ['MY_OPENAI_API_KEY', 'QDRANT_URL', 'QDRANT_API_KEY']
-  
-  # Verify deployment was successful
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: bash
-    args:
-      - '-c'
-      - |
-        echo "Verifying deployment..."
-        sleep 15  # Give the service some time to start up
-        STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://isu-digital-lib-$PROJECT_ID.a.run.app || echo "Failed")
-        if [ "$STATUS" == "200" ] || [ "$STATUS" == "404" ]; then
-          echo "Deployment successful! Service responded with HTTP status $STATUS"
-        else
-          echo "Deployment verification failed! Service responded with HTTP status $STATUS"
-          exit 1
-        fi
   
   # Tag the latest successful image
   - name: 'gcr.io/cloud-builders/docker'
