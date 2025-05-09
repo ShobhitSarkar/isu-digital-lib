@@ -17,9 +17,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Set environment variables
+# Set environment variables for BUILD TIME ONLY
+# These are placeholder values just to make the build succeed
 ENV NODE_ENV=production
 ENV NEXT_PUBLIC_BASE_PATH=""
+ENV MY_OPENAI_API_KEY="placeholder-during-build"
+ENV QDRANT_URL="placeholder-during-build"
+ENV QDRANT_API_KEY="placeholder-during-build"
 
 # Build the application
 RUN npm run build
@@ -30,6 +34,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
+# Note: Real environment variables will be injected at runtime by Cloud Run
 
 # Copy necessary files
 COPY --from=builder /app/public ./public

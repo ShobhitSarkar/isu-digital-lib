@@ -17,6 +17,37 @@ const qdrant = new QdrantClient({
 const COLLECTION = "academic-docs"; // name of the Qdrant collection
 
 /**
+ * Helper function to check if required API keys are available at runtime
+ * Returns an appropriate error response if keys are missing
+ */
+function checkRequiredKeys() {
+  const missingKeys = [];
+  
+  if (!process.env.MY_OPENAI_API_KEY) {
+    missingKeys.push('MY_OPENAI_API_KEY');
+  }
+  
+  if (!process.env.QDRANT_URL) {
+    missingKeys.push('QDRANT_URL');
+  }
+  
+  if (!process.env.QDRANT_API_KEY) {
+    missingKeys.push('QDRANT_API_KEY');
+  }
+  
+  if (missingKeys.length > 0) {
+    console.error(`Missing required environment variables: ${missingKeys.join(', ')}`);
+    return {
+      error: true,
+      message: `API configuration incomplete. Missing: ${missingKeys.join(', ')}`,
+      status: 500
+    };
+  }
+  
+  return { error: false };
+}
+
+/**
  * API route to clean up collections (used when session ends)
  * Can be called via client-side cleanup logic
  * 
@@ -25,6 +56,14 @@ const COLLECTION = "academic-docs"; // name of the Qdrant collection
  */
 export async function POST(request: NextRequest) {
   console.log("Cleanup route called");
+
+    const keyCheck = checkRequiredKeys();
+    if (keyCheck.error) {
+      return NextResponse.json(
+        { error: keyCheck.message },
+        { status: keyCheck.status }
+      );
+    }
   
   try {
     // Debug environment variables

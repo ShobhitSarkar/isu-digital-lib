@@ -14,6 +14,37 @@ const COLLECTION_NAME = 'isu-semantic-search';
 const openai = createOpenAIClient();
 
 /**
+ * Helper function to check if required API keys are available at runtime
+ * Returns an appropriate error response if keys are missing
+ */
+function checkRequiredKeys() {
+  const missingKeys = [];
+  
+  if (!process.env.MY_OPENAI_API_KEY) {
+    missingKeys.push('MY_OPENAI_API_KEY');
+  }
+  
+  if (!process.env.QDRANT_URL) {
+    missingKeys.push('QDRANT_URL');
+  }
+  
+  if (!process.env.QDRANT_API_KEY) {
+    missingKeys.push('QDRANT_API_KEY');
+  }
+  
+  if (missingKeys.length > 0) {
+    console.error(`Missing required environment variables: ${missingKeys.join(', ')}`);
+    return {
+      error: true,
+      message: `API configuration incomplete. Missing: ${missingKeys.join(', ')}`,
+      status: 500
+    };
+  }
+  
+  return { error: false };
+}
+
+/**
  * Semantic search endpoint for academic papers
  * Converts search query to embedding and finds similar papers in vector database
  * 
@@ -50,6 +81,17 @@ const openai = createOpenAIClient();
  * }
  */
 export async function POST(request: NextRequest) {
+
+  export async function POST(request: NextRequest) {
+    // Check for required keys at runtime
+    const keyCheck = checkRequiredKeys();
+    if (keyCheck.error) {
+      return NextResponse.json(
+        { error: keyCheck.message },
+        { status: keyCheck.status }
+      );
+    }
+    
   try {
     const { query } = await request.json();
     
