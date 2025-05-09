@@ -82,9 +82,7 @@ function checkRequiredKeys() {
  */
 export async function POST(request: NextRequest) {
 
-  export async function POST(request: NextRequest) {
-    // Check for required keys at runtime
-    const keyCheck = checkRequiredKeys();
+  const keyCheck = checkRequiredKeys();
     if (keyCheck.error) {
       return NextResponse.json(
         { error: keyCheck.message },
