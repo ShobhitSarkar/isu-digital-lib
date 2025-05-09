@@ -267,6 +267,5 @@ For more information, contact the development team at [shobhitsarkar0802@gmail.c
 ---
 
 <div align="center">
-  <img src="https://www.iastate.edu/sites/default/files/brand/img/logo-small.png" alt="Iowa State University" width="150" />
   <p>© 2025 Iowa State University. All Rights Reserved.</p>
 </div>
