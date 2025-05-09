@@ -26,20 +26,15 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
-      - '--set-env-vars'
-      - 'MY_OPENAI_API_KEY=$$MY_OPENAI_API_KEY,QDRANT_URL=$$QDRANT_URL,QDRANT_API_KEY=$$QDRANT_API_KEY'
-    secretEnv: ['MY_OPENAI_API_KEY', 'QDRANT_URL', 'QDRANT_API_KEY']
+      - '--update-env-vars'
+      - 'MY_OPENAI_API_KEY=${_MY_OPENAI_API_KEY},QDRANT_URL=${_QDRANT_URL},QDRANT_API_KEY=${_QDRANT_API_KEY}'
 
 timeout: '1800s'  # 30 minutes
 
-availableSecrets:
-  secretManager:
-    - versionName: projects/$PROJECT_ID/secrets/MY_OPENAI_API_KEY/versions/latest
-      env: 'MY_OPENAI_API_KEY'
-    - versionName: projects/$PROJECT_ID/secrets/QDRANT_URL/versions/latest
-      env: 'QDRANT_URL'
-    - versionName: projects/$PROJECT_ID/secrets/QDRANT_API_KEY/versions/latest
-      env: 'QDRANT_API_KEY'
+substitutions:
+  _MY_OPENAI_API_KEY: ${_MY_OPENAI_API_KEY}
+  _QDRANT_URL: ${_QDRANT_URL}
+  _QDRANT_API_KEY: ${_QDRANT_API_KEY}
 
 images:
   - 'gcr.io/$PROJECT_ID/isu-digital-lib:latest'
