@@ -1,5 +1,7 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+/* src/app/globals.css */
+@import "@tailwindcss/postcss/base";
+@import "@tailwindcss/postcss/components";
+@import "@tailwindcss/postcss/utilities";
 
 @custom-variant dark (&:is(.dark *));
 
