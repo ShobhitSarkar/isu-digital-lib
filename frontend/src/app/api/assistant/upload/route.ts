@@ -22,6 +22,37 @@ const qdrant = new QdrantClient({
   checkCompatibility: false
 });
 
+/**
+ * Helper function to check if required API keys are available at runtime
+ * Returns an appropriate error response if keys are missing
+ */
+function checkRequiredKeys() {
+  const missingKeys = [];
+  
+  if (!process.env.MY_OPENAI_API_KEY) {
+    missingKeys.push('MY_OPENAI_API_KEY');
+  }
+  
+  if (!process.env.QDRANT_URL) {
+    missingKeys.push('QDRANT_URL');
+  }
+  
+  if (!process.env.QDRANT_API_KEY) {
+    missingKeys.push('QDRANT_API_KEY');
+  }
+  
+  if (missingKeys.length > 0) {
+    console.error(`Missing required environment variables: ${missingKeys.join(', ')}`);
+    return {
+      error: true,
+      message: `API configuration incomplete. Missing: ${missingKeys.join(', ')}`,
+      status: 500
+    };
+  }
+  
+  return { error: false };
+}
+
 const COLLECTION = "academic-docs"; // name of the Qdrant collection
 const VECTOR_SIZE = 1536; // size of the vector embeddings from OpenAI's model
 
@@ -30,6 +61,15 @@ const VECTOR_SIZE = 1536; // size of the vector embeddings from OpenAI's model
  */
 export async function POST(request: NextRequest) {
   console.log("Upload route called");
+
+  const keyCheck = checkRequiredKeys();
+  if (keyCheck.error) {
+    return NextResponse.json(
+      { error: keyCheck.message },
+      { status: keyCheck.status }
+    );
+  }
+
   
   try {
     // Debug environment variables

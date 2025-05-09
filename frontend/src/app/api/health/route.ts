@@ -3,6 +3,37 @@ import { NextResponse } from "next/server";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { createOpenAIClient } from "@/lib/openai-config";
 
+/**
+ * Helper function to check if required API keys are available at runtime
+ * Returns an appropriate error response if keys are missing
+ */
+function checkRequiredKeys() {
+  const missingKeys = [];
+  
+  if (!process.env.MY_OPENAI_API_KEY) {
+    missingKeys.push('MY_OPENAI_API_KEY');
+  }
+  
+  if (!process.env.QDRANT_URL) {
+    missingKeys.push('QDRANT_URL');
+  }
+  
+  if (!process.env.QDRANT_API_KEY) {
+    missingKeys.push('QDRANT_API_KEY');
+  }
+  
+  if (missingKeys.length > 0) {
+    console.error(`Missing required environment variables: ${missingKeys.join(', ')}`);
+    return {
+      error: true,
+      message: `API configuration incomplete. Missing: ${missingKeys.join(', ')}`,
+      status: 500
+    };
+  }
+  
+  return { error: false };
+}
+
 export async function GET() {
   const health = {
     status: "healthy",
@@ -11,6 +42,14 @@ export async function GET() {
     qdrant: { status: "unknown" },
     timestamp: new Date().toISOString()
   };
+
+  const keyCheck = checkRequiredKeys();
+  if (keyCheck.error) {
+    return NextResponse.json(
+      { error: keyCheck.message },
+      { status: keyCheck.status }
+    );
+  }
 
   try {
     // Check environment variables
