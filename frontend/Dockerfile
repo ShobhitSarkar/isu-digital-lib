@@ -1,27 +1,30 @@
 # Base Node.js image
-FROM --platform=linux/amd64 node:20-alpine AS base
+FROM node:20-alpine AS base
 
-# Install dependencies with more resources
+# Install dependencies
 FROM base AS deps
 WORKDIR /app
+
+# Copy package files
 COPY package*.json ./
-# Install ALL dependencies (including dev dependencies)
 RUN npm ci
 
-# Build with generous resource allocation
+# Build the application
 FROM base AS builder
 WORKDIR /app
+
+# Copy dependencies and source code
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Set proper environment variables for the build
+# Set environment variables
 ENV NODE_ENV=production
 ENV NEXT_PUBLIC_BASE_PATH=""
 
 # Build the application
-RUN NODE_OPTIONS="--max-old-space-size=4096" npx next build
+RUN npm run build
 
-# Production image, copy all files and run next
+# Production image
 FROM base AS runner
 WORKDIR /app
 
@@ -33,8 +36,6 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Expose the port
+# Expose port and start application
 EXPOSE 3000
-
-# Start the application
 CMD ["node", "server.js"]

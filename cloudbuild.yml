@@ -1,7 +1,18 @@
 steps:
+  # First, navigate to frontend directory
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args: ['-c', 'cd frontend && ls -la']
+
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/isu-digital-lib:$COMMIT_SHA', '-f', 'frontend/Dockerfile', '.']
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/isu-digital-lib:$COMMIT_SHA'
+      - '-f'
+      - 'frontend/Dockerfile'
+      - './frontend'  # Explicitly set the build context to the frontend directory
   
   # Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
