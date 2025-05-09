@@ -1,24 +1,18 @@
 steps:
-  # First, navigate to frontend directory
-  - name: 'gcr.io/cloud-builders/docker'
-    entrypoint: 'bash'
-    args: ['-c', 'cd frontend && ls -la']
-
-  # Build the container image
+  # Build the container image with a specific tag
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
       - '-t'
-      - 'gcr.io/$PROJECT_ID/isu-digital-lib:$COMMIT_SHA'
-      - '-f'
-      - 'frontend/Dockerfile'
-      - './frontend'  # Explicitly set the build context to the frontend directory
+      - 'gcr.io/$PROJECT_ID/isu-digital-lib:latest'
+      - '.'
+    dir: 'frontend'  # Set the working directory to frontend
   
   # Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/isu-digital-lib:$COMMIT_SHA']
+    args: ['push', 'gcr.io/$PROJECT_ID/isu-digital-lib:latest']
   
-  # Deploy to Cloud Run automatically
+  # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -26,7 +20,7 @@ steps:
       - 'deploy'
       - 'isu-digital-lib'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/isu-digital-lib:$COMMIT_SHA'
+      - 'gcr.io/$PROJECT_ID/isu-digital-lib:latest'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -35,14 +29,6 @@ steps:
       - '--set-env-vars'
       - 'MY_OPENAI_API_KEY=$$MY_OPENAI_API_KEY,QDRANT_URL=$$QDRANT_URL,QDRANT_API_KEY=$$QDRANT_API_KEY'
     secretEnv: ['MY_OPENAI_API_KEY', 'QDRANT_URL', 'QDRANT_API_KEY']
-  
-  # Tag the latest successful image
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['tag', 'gcr.io/$PROJECT_ID/isu-digital-lib:$COMMIT_SHA', 'gcr.io/$PROJECT_ID/isu-digital-lib:latest']
-  
-  # Push the latest tag
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/isu-digital-lib:latest']
 
 timeout: '1800s'  # 30 minutes
 
@@ -56,7 +42,6 @@ availableSecrets:
       env: 'QDRANT_API_KEY'
 
 images:
-  - 'gcr.io/$PROJECT_ID/isu-digital-lib:$COMMIT_SHA'
   - 'gcr.io/$PROJECT_ID/isu-digital-lib:latest'
 
 options:
