@@ -268,6 +268,13 @@ For more information, contact the development team at [shobhitsarkar0802@gmail.c
 
 ---
 
+### Contribution Statistics: 
+
+## Contributors
+![Contributors](https://img.shields.io/github/contributors/ShobhitSarkar/isu-digital-lib)
+
+
+
 <div align="center">
   <p>© 2025 Iowa State University. All Rights Reserved.</p>
 </div>
