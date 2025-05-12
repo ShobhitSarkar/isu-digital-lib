@@ -268,10 +268,6 @@ For more information, contact the development team at [shobhitsarkar0802@gmail.c
 
 ---
 
-### Contribution Statistics: 
-
-## Contributors
-![Contributors](https://img.shields.io/github/contributors/ShobhitSarkar/isu-digital-lib)
 
 
 
