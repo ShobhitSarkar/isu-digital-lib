@@ -59,6 +59,7 @@ export default function ChatInterface({ uploadedPapers }: ChatInterfaceProps) {
         body: JSON.stringify({
           question: input,
           paperNames: uploadedPapers.map((paper) => paper.name),
+          history: updatedMessages,
         }),
       });
 
