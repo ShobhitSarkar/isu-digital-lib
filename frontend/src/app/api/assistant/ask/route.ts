@@ -90,7 +90,6 @@ export async function POST(request: NextRequest) {
     try {
       const collections = await qdrant.getCollections();
       const exists = collections.collections.some((c) => c.name === COLLECTION);
-      const exists = collections.collections.some(c => c.name === COLLECTION);
       if (!exists) {
         console.error("Collection does not exist");
         return NextResponse.json(
